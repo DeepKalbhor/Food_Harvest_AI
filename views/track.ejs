@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>Track Delivery</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        #map {
+            height: 80vh;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <h2>
+        Track Your Delivery
+    </h2>
+
+    <p style="text-align:center">
+        Order ID: <%= orderId %>
+    </p>
+
+    <div id="map"></div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+
+    <script>
+
+        const socket = io();
+
+        const orderId = "<%= orderId %>";
+
+        const role = "client";
+
+
+        console.log(
+            "Customer tracking:",
+            orderId
+        );
+
+
+        // Join order
+        socket.emit(
+            "join-order",
+            {
+                orderId: orderId,
+                role: role
+            }
+        );
+
+
+        // Create map
+        const map = L.map("map")
+            .setView([0, 0], 10);
+
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution:
+                    "© OpenStreetMap contributors"
+            }
+        ).addTo(map);
+
+
+        let deliveryMarker = null;
+
+
+        // Receive delivery partner location
+        socket.on(
+            "receive-location",
+            function(data) {
+
+                const latitude =
+                    data.latitude;
+
+                const longitude =
+                    data.longitude;
+
+
+                console.log(
+                    "Delivery partner:",
+                    latitude,
+                    longitude
+                );
+
+
+                // Create marker
+                if (!deliveryMarker) {
+
+                    deliveryMarker =
+                        L.marker([
+                            latitude,
+                            longitude
+                        ]).addTo(map);
+
+                }
+
+
+                // Move marker
+                else {
+
+                    deliveryMarker.setLatLng([
+                        latitude,
+                        longitude
+                    ]);
+
+                }
+
+
+                // Center map
+                map.setView(
+                    [latitude, longitude],
+                    16
+                );
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
