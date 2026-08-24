@@ -781,15 +781,22 @@ app.get("/test-matching", async function(req, res) {
             </p>
         `);
 
-    } catch (error) {
+   } catch (error) {
 
-        console.error("TEST MATCHING ERROR:", error);
+    console.error("TEST MATCHING ERROR:", error);
 
-        res.status(500).send(`
-            <h2>Database Error</h2>
-            <pre>${error.message}</pre>
-        `);
-    }
+    res.status(500).send(`
+        <h2>Database Error</h2>
+
+        <p><b>Message:</b> ${error.message || "No message"}</p>
+
+        <p><b>Code:</b> ${error.code || "No code"}</p>
+
+        <p><b>SQL State:</b> ${error.sqlState || "No SQL state"}</p>
+
+        <p><b>SQL Message:</b> ${error.sqlMessage || "No SQL message"}</p>
+    `);
+}
 
 });
 
