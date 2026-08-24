@@ -737,62 +737,59 @@ const PORT =
 
 app.get("/test-matching", async function(req, res) {
 
-    const foodId = 1; // change this to an existing food_id
+    try {
 
-    const [rows] = await db.query(`
-        SELECT
-            n.ngo_id,
-            n.ngo_name,
-            o.order_id
-        FROM FoodDonations f
-        JOIN NGOs n
-            ON n.capacity > 0
-        JOIN FoodRequests fr
-            ON fr.food_id = f.food_id
-            AND fr.ngo_id = n.ngo_id
-        JOIN Orders o
-            ON o.request_id = fr.request_id
-            AND o.ngo_id = n.ngo_id
-        WHERE f.food_id = ?
-        LIMIT 1
-    `, [foodId]);
+        // Get any existing order
+        const [rows] = await db.query(`
+            SELECT order_id
+            FROM Orders
+            LIMIT 1
+        `);
 
-    if (rows.length === 0) {
-        return res.send("No matching order found");
+        if (rows.length === 0) {
+            return res.send("No orders found in database");
+        }
+
+        const orderId = rows[0].order_id;
+
+        const baseUrl =
+            `${req.protocol}://${req.get("host")}`;
+
+        const deliveryUrl =
+            `${baseUrl}/delivery/${orderId}`;
+
+        const trackingUrl =
+            `${baseUrl}/track/${orderId}`;
+
+        res.send(`
+            <h2>Live Tracking Test</h2>
+
+            <p>Order ID: ${orderId}</p>
+
+            <p>
+                Delivery URL:
+                <a href="${deliveryUrl}">
+                    ${deliveryUrl}
+                </a>
+            </p>
+
+            <p>
+                Tracking URL:
+                <a href="${trackingUrl}">
+                    ${trackingUrl}
+                </a>
+            </p>
+        `);
+
+    } catch (error) {
+
+        console.error("TEST MATCHING ERROR:", error);
+
+        res.status(500).send(`
+            <h2>Database Error</h2>
+            <pre>${error.message}</pre>
+        `);
     }
-
-    const orderId = rows[0].order_id;
-
-    const baseUrl =
-        `${req.protocol}://${req.get("host")}`;
-
-    const deliveryUrl =
-        `${baseUrl}/delivery/${orderId}`;
-
-    const trackingUrl =
-        `${baseUrl}/track/${orderId}`;
-
-    res.send(`
-        <h2>Matching Result</h2>
-
-        <p>NGO: ${rows[0].ngo_name}</p>
-
-        <p>Order ID: ${orderId}</p>
-
-        <p>
-            Delivery URL:
-            <a href="${deliveryUrl}">
-                ${deliveryUrl}
-            </a>
-        </p>
-
-        <p>
-            Tracking URL:
-            <a href="${trackingUrl}">
-                ${trackingUrl}
-            </a>
-        </p>
-    `);
 
 });
 
