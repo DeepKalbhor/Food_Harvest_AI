@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const app = express();
-
+const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const socketio = require("socket.io");
@@ -44,10 +44,14 @@ const db = mysql.createPool({
     database: process.env.DB_NAME,
 
     ssl: {
-        ca: require("fs").readFileSync(
+        ca: fs.readFileSync(
             path.join(__dirname, "ca.pem")
         )
-    }
+    },
+
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 
