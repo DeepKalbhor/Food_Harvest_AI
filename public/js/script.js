@@ -1,27 +1,27 @@
 const socket = io();
 
-const params=new URLSearchParams(window.location.search);
+const params = new URLSearchParams(window.location.search);
 
-const orderId=params.get("order");
-const role=params.get("role");
+const orderId = params.get("order");
+const role = params.get("role");
 
-console.log("Order:",orderId);
-console.log("Role:",role);
+console.log("Order:", orderId);
+console.log("Role:", role);
 
-if(oredrId && role){
-    socket.emit("join-order",{
+if (orderId && role) {
+    socket.emit("join-order", {
         orderId: orderId,
         role: role
     });
 }
 
-const map=L.map("map").setView([0,0],10);
+const map = L.map("map").setView([23.0225, 72.5714], 13);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "OpenStreetMap"
 }).addTo(map);
 
-let deliveryMarker=null;
+let deliveryMarker = null;
 
 if (role === "delivery") {
 
@@ -29,11 +29,8 @@ if (role === "delivery") {
 
         function(position) {
 
-            const latitude =
-                position.coords.latitude;
-
-            const longitude =
-                position.coords.longitude;
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
             console.log(
                 "Sending:",
@@ -96,16 +93,8 @@ if (role === "client") {
         ], 16);
 
     });
-
 }
-
-
-    
-  
 
 socket.on("user-disconnected", (id) => {
-if(markers[id]){
-    map.removeLayer(markers[id]);
-    delete markers[id];
-}
-})
+    console.log("User disconnected:", id);
+});
