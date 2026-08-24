@@ -736,68 +736,24 @@ const PORT =
     process.env.PORT || 3000;
 
 app.get("/test-matching", async function(req, res) {
-
     try {
-
-        // Get any existing order
-        const [rows] = await db.query(`
-            SELECT order_id
-            FROM Orders
-            LIMIT 1
-        `);
-
-        if (rows.length === 0) {
-            return res.send("No orders found in database");
-        }
-
-        const orderId = rows[0].order_id;
-
-        const baseUrl =
-            `${req.protocol}://${req.get("host")}`;
-
-        const deliveryUrl =
-            `${baseUrl}/delivery/${orderId}`;
-
-        const trackingUrl =
-            `${baseUrl}/track/${orderId}`;
+        const [rows] = await db.query("SELECT 1 AS test");
 
         res.send(`
-            <h2>Live Tracking Test</h2>
-
-            <p>Order ID: ${orderId}</p>
-
-            <p>
-                Delivery URL:
-                <a href="${deliveryUrl}">
-                    ${deliveryUrl}
-                </a>
-            </p>
-
-            <p>
-                Tracking URL:
-                <a href="${trackingUrl}">
-                    ${trackingUrl}
-                </a>
-            </p>
+            <h2>Database connection works!</h2>
+            <p>Test result: ${rows[0].test}</p>
         `);
 
-   } catch (error) {
+    } catch (error) {
+        console.error("DATABASE TEST ERROR:", error);
 
-    console.error("TEST MATCHING ERROR:", error);
-
-    res.status(500).send(`
-        <h2>Database Error</h2>
-
-        <p><b>Message:</b> ${error.message || "No message"}</p>
-
-        <p><b>Code:</b> ${error.code || "No code"}</p>
-
-        <p><b>SQL State:</b> ${error.sqlState || "No SQL state"}</p>
-
-        <p><b>SQL Message:</b> ${error.sqlMessage || "No SQL message"}</p>
-    `);
-}
-
+        res.status(500).send(`
+            <h2>Database connection failed</h2>
+            <p>Code: ${error.code || "none"}</p>
+            <p>Message: ${error.message || "none"}</p>
+            <pre>${error.stack || ""}</pre>
+        `);
+    }
 });
 
 
