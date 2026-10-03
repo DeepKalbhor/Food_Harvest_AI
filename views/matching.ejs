@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+```
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>AI Matching — Food Harvest AI</title>
+
+<link
+    rel="stylesheet"
+    href="/css/style.css"
+>
+
+<style>
+
+    .matching-container {
+        max-width: 650px;
+        margin: 60px auto;
+        padding: 35px;
+    }
+
+    .matching-card {
+        background: white;
+        padding: 30px;
+
+        border-radius: 18px;
+
+        border: 1px solid #e4eee7;
+
+        margin-top: 25px;
+    }
+
+    .ai-box {
+        text-align: center;
+
+        background: #e8f7ed;
+
+        padding: 20px;
+
+        border-radius: 12px;
+
+        margin-bottom: 25px;
+    }
+
+    .score {
+        font-size: 45px;
+        font-weight: bold;
+
+        color: #269653;
+
+        margin: 15px 0;
+    }
+
+    .match-info {
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 15px;
+
+        margin: 25px 0;
+    }
+
+    .info {
+        background: #f6faf7;
+
+        padding: 15px;
+
+        border-radius: 10px;
+    }
+
+    .info small {
+        color: #718078;
+    }
+
+    .confirm-btn {
+        width: 100%;
+
+        padding: 15px;
+
+        border: none;
+
+        border-radius: 9px;
+
+        background: #269653;
+
+        color: white;
+
+        font-size: 16px;
+
+        font-weight: bold;
+
+        cursor: pointer;
+    }
+
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<nav class="navbar">
+
+    <div class="logo">
+        🍱 Food Harvest AI
+    </div>
+
+    <div class="nav-links">
+
+        <a href="/">
+            Home
+        </a>
+
+    </div>
+
+</nav>
+
+
+<div class="matching-container">
+
+    <div class="ai-box">
+
+        <div style="font-size:40px">
+            🤖
+        </div>
+
+        <h2>
+            AI Matching
+        </h2>
+
+        <p>
+            Finding the best NGO for your food...
+        </p>
+
+    </div>
+
+
+    <div class="matching-card">
+
+        <h2>
+            🏆 Best Match Found
+        </h2>
+
+        <h3
+            style="margin-top:15px"
+            id="foodDisplay"
+        >
+            Vegetable Biryani
+        </h3>
+
+
+        <div class="match-info">
+
+            <div class="info">
+
+                <small>
+                    NGO
+                </small>
+
+                <br>
+
+                <strong>
+                    Helping Hands NGO
+                </strong>
+
+            </div>
+
+
+            <div class="info">
+
+                <small>
+                    Distance
+                </small>
+
+                <br>
+
+                <strong>
+                    1.2 km
+                </strong>
+
+            </div>
+
+
+            <div class="info">
+
+                <small>
+                    Capacity
+                </small>
+
+                <br>
+
+                <strong>
+                    150 meals
+                </strong>
+
+            </div>
+
+
+            <div class="info">
+
+                <small>
+                    Verification
+                </small>
+
+                <br>
+
+                <strong>
+                    ✓ Verified
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div style="text-align:center">
+
+            <small>
+                Matching Score
+            </small>
+
+            <div class="score">
+                92%
+            </div>
+
+        </div>
+
+
+        <button
+            class="confirm-btn"
+            onclick="confirmMatch()"
+        >
+            ✓ Confirm NGO & Continue
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const food =
+        sessionStorage.getItem("foodName");
+
+    const quantity =
+        sessionStorage.getItem("quantity");
+
+    const unit =
+        sessionStorage.getItem("unit");
+
+
+    if (food) {
+
+        document
+            .getElementById("foodDisplay")
+            .innerText =
+            food +
+            " • " +
+            quantity +
+            " " +
+            unit;
+
+    }
+
+
+    function confirmMatch() {
+
+        // Demo order ID
+        // We will connect this
+        // to your database later.
+
+        window.location.href =
+            "/track/demo";
+
+    }
+
+</script>
+```
+
+</body>
+
+</html>
