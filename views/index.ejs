@@ -4,392 +4,171 @@
 
 <head>
 
-```
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<title>Delivery Partner | Food Harvest AI</title>
+    <title>Food Harvest AI</title>
 
-<link
-    rel="stylesheet"
-    href="/css/style.css"
->
-
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
->
-```
+    <link
+        rel="stylesheet"
+        href="/css/style.css"
+    >
 
 </head>
 
+
 <body>
 
-<div class="tracking-page">
 
-```
-<div class="tracking-header">
+<nav class="navbar">
 
-
-    <div class="tracking-title">
-
-        <h2>
-            🚚 Delivery Partner
-        </h2>
-
-    
-
+    <div class="logo">
+        🍱 Food Harvest <span>AI</span>
     </div>
 
 
-    <div class="status">
+    <div class="nav-links">
 
-        <div
-            id="statusDot"
-            class="status-dot"
-        ></div>
+        <a href="/">
+            Home
+        </a>
 
-        <span id="statusText">
-            Connecting...
-        </span>
+        <a href="/delivery/demo">
+            Delivery
+        </a>
 
-    </div>
-
-
-</div>
-
-
-
-<div class="map-wrapper">
-
-
-    <div id="map"></div>
-
-
-    <div class="map-card">
-
-        <h3>
-            📡 Live Location
-        </h3>
-
-
-        <div class="map-info">
-
-            <span>
-                Latitude
-            </span>
-
-            <span id="latitude">
-                --
-            </span>
-
-        </div>
-
-
-        <div class="map-info">
-
-            <span>
-                Longitude
-            </span>
-
-            <span id="longitude">
-                --
-            </span>
-
-        </div>
-
-
-        <div class="map-info">
-
-            <span>
-                GPS
-            </span>
-
-            <span id="gpsStatus">
-                Waiting...
-            </span>
-
-        </div>
+        <a href="/track/demo">
+            Track
+        </a>
 
     </div>
 
-
-</div>
-```
-
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
-<script>
+</nav>
 
 
-const socket = io();
+
+<main class="hero">
 
 
-const roomId = "<%= orderId %>";
+    <section class="hero-content">
 
 
-/* =========================
-   MAP
-========================= */
-
-
-const map = L.map("map")
-    .setView(
-        [23.0225, 72.5714],
-        13
-    );
-
-
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        attribution:
-            "&copy; OpenStreetMap contributors"
-    }
-).addTo(map);
-
-
-/* =========================
-   DELIVERY MARKER
-========================= */
-
-
-let deliveryMarker = null;
-
-
-/* Custom delivery icon */
-
-const deliveryIcon = L.divIcon({
-
-    className: "",
-
-    html: `
-        <div style="
-            width:42px;
-            height:42px;
-            border-radius:50%;
-            background:#269653;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:23px;
-            border:3px solid white;
-            box-shadow:0 3px 12px rgba(0,0,0,.25);
-        ">
-            🚚
+        <div class="badge">
+            AI-Powered Food Redistribution
         </div>
-    `,
 
-    iconSize: [42, 42],
 
-    iconAnchor: [21, 21]
+        <h1>
 
-});
+            Turn Surplus Food
 
+            <br>
 
-/* =========================
-   SOCKET CONNECTION
-========================= */
+            Into <span>Social Impact.</span>
 
+        </h1>
 
-socket.on("connect", function() {
 
-    console.log(
-        "Connected:",
-        socket.id
-    );
+        <p class="hero-description">
 
+            Food Harvest AI connects surplus food
+            with nearby NGOs and enables
+            real-time delivery tracking.
 
-    document
-        .getElementById("statusDot")
-        .classList
-        .add("connected");
+        </p>
 
 
-    document
-        .getElementById("statusText")
-        .innerText =
-        "Connected";
+        <div class="buttons">
 
 
-    /* Join tracking room */
+            <a
+                href="/delivery/demo"
+                class="btn btn-primary"
+            >
+                🚚 Start Delivery
+            </a>
 
-    socket.emit(
-        "join-order",
-        {
 
-            orderId: roomId,
+            <a
+                href="/track/demo"
+                class="btn btn-secondary"
+            >
+                📍 Track Delivery
+            </a>
 
-            role: "delivery"
 
-        }
-    );
+        </div>
 
-});
 
+    </section>
 
-/* =========================
-   GPS
-========================= */
 
 
-if (
-    navigator.geolocation
-) {
+    <section class="stats">
 
 
-    navigator.geolocation.watchPosition(
+        <div class="stat-card">
 
-        function(position) {
+            <div class="icon">
+                🍚
+            </div>
 
+            <h2>
+                125 kg
+            </h2>
 
-            const latitude =
-                position.coords.latitude;
+            <p>
+                Food Rescued
+            </p>
 
+        </div>
 
-            const longitude =
-                position.coords.longitude;
 
 
-            console.log(
-                "GPS:",
-                latitude,
-                longitude
-            );
+        <div class="stat-card">
 
+            <div class="icon">
+                🤝
+            </div>
 
-            /* Update information */
+            <h2>
+                12
+            </h2>
 
-            document
-                .getElementById("latitude")
-                .innerText =
-                latitude.toFixed(6);
+            <p>
+                NGOs Connected
+            </p>
 
+        </div>
 
-            document
-                .getElementById("longitude")
-                .innerText =
-                longitude.toFixed(6);
 
 
-            document
-                .getElementById("gpsStatus")
-                .innerText =
-                "Active";
+        <div class="stat-card">
 
+            <div class="icon">
+                🌱
+            </div>
 
-            /* Send to server */
+            <h2>
+                86
+            </h2>
 
-            socket.emit(
-                "send-location",
-                {
+            <p>
+                Deliveries
+            </p>
 
-                    latitude:
-                        latitude,
+        </div>
 
-                    longitude:
-                        longitude
 
-                }
-            );
+    </section>
 
 
-            /* Show own marker */
+</main>
 
-            if (!deliveryMarker) {
-
-
-                deliveryMarker =
-                    L.marker(
-                        [
-                            latitude,
-                            longitude
-                        ],
-                        {
-                            icon:
-                                deliveryIcon
-                        }
-                    )
-                    .addTo(map)
-                    .bindPopup(
-                        "🚚 You are here"
-                    );
-
-
-                deliveryMarker
-                    .openPopup();
-
-
-            } else {
-
-
-                deliveryMarker
-                    .setLatLng(
-                        [
-                            latitude,
-                            longitude
-                        ]
-                    );
-
-            }
-
-
-            /* Zoom to delivery partner */
-
-            map.setView(
-                [
-                    latitude,
-                    longitude
-                ],
-                17
-            );
-
-        },
-
-
-        function(error) {
-
-
-            console.error(
-                "GPS Error:",
-                error.message
-            );
-
-
-            document
-                .getElementById("gpsStatus")
-                .innerText =
-                "GPS unavailable";
-
-        },
-
-
-        {
-
-            enableHighAccuracy: true,
-
-            timeout: 10000,
-
-            maximumAge: 0
-
-        }
-
-    );
-
-}
-
-
-</script>
 
 </body>
 
