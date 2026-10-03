@@ -234,6 +234,33 @@ app.get(
     }
 );
 
+// ----------------------------------------
+// DONATE FOOD PAGE
+// ----------------------------------------
+
+app.get(
+    "/donate",
+    function(req, res) {
+
+        res.render("donate");
+
+    }
+);
+
+
+// ----------------------------------------
+// AI MATCHING PAGE
+// ----------------------------------------
+
+app.get(
+    "/matching",
+    function(req, res) {
+
+        res.render("matching");
+
+    }
+);
+
 
 // ----------------------------------------
 // DELIVERY TRACKING PAGE
