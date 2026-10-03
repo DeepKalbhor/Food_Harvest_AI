@@ -471,3 +471,476 @@ cursor: pointer;
 
     text-align: center;
 }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  }
+
+html,
+body {
+width: 100%;
+min-height: 100%;
+font-family: Arial, Helvetica, sans-serif;
+background: #f5f8f6;
+color: #173b27;
+}
+
+/* =========================
+NAVBAR
+========================= */
+
+.navbar {
+height: 68px;
+
+```
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+padding: 0 6%;
+
+background: white;
+
+border-bottom: 1px solid #e3ebe5;
+```
+
+}
+
+.logo {
+font-size: 21px;
+font-weight: 700;
+}
+
+.logo span {
+color: #269653;
+}
+
+.nav-links {
+display: flex;
+gap: 22px;
+}
+
+.nav-links a {
+text-decoration: none;
+color: #456052;
+font-size: 14px;
+font-weight: 600;
+}
+
+.nav-links a:hover {
+color: #269653;
+}
+
+/* =========================
+HOME
+========================= */
+
+.hero {
+max-width: 1100px;
+margin: auto;
+padding: 80px 25px;
+}
+
+.hero-content {
+text-align: center;
+max-width: 720px;
+margin: auto;
+}
+
+.badge {
+display: inline-block;
+
+```
+padding: 8px 16px;
+
+border-radius: 30px;
+
+background: #e5f5e9;
+color: #267845;
+
+font-size: 13px;
+font-weight: 700;
+
+margin-bottom: 22px;
+```
+
+}
+
+.hero h1 {
+font-size: 56px;
+line-height: 1.08;
+
+```
+margin-bottom: 22px;
+```
+
+}
+
+.hero h1 span {
+color: #269653;
+}
+
+.hero-description {
+color: #68776e;
+
+```
+font-size: 17px;
+
+line-height: 1.7;
+```
+
+}
+
+/* =========================
+BUTTONS
+========================= */
+
+.buttons {
+display: flex;
+justify-content: center;
+gap: 14px;
+
+```
+margin-top: 32px;
+```
+
+}
+
+.btn {
+padding: 13px 23px;
+
+```
+border-radius: 9px;
+
+text-decoration: none;
+
+font-weight: 700;
+
+transition: 0.2s;
+```
+
+}
+
+.btn-primary {
+background: #269653;
+color: white;
+}
+
+.btn-secondary {
+background: white;
+color: #269653;
+
+```
+border: 1px solid #269653;
+```
+
+}
+
+.btn:hover {
+transform: translateY(-2px);
+}
+
+/* =========================
+STATS
+========================= */
+
+.stats {
+max-width: 850px;
+
+```
+margin: 70px auto 0;
+
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+
+gap: 18px;
+```
+
+}
+
+.stat-card {
+background: white;
+
+```
+border: 1px solid #e3ebe5;
+
+border-radius: 14px;
+
+padding: 25px;
+
+text-align: center;
+```
+
+}
+
+.stat-card .icon {
+font-size: 28px;
+
+```
+margin-bottom: 8px;
+```
+
+}
+
+.stat-card h2 {
+font-size: 28px;
+}
+
+.stat-card p {
+margin-top: 5px;
+
+```
+color: #75827a;
+
+font-size: 14px;
+```
+
+}
+
+/* =========================
+TRACKING PAGE
+========================= */
+
+.tracking-page {
+height: calc(100vh - 68px);
+
+```
+display: flex;
+flex-direction: column;
+```
+
+}
+
+/* Tracking top bar */
+
+.tracking-header {
+height: 78px;
+
+```
+background: white;
+
+border-bottom: 1px solid #e3ebe5;
+
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+padding: 0 30px;
+```
+
+}
+
+.tracking-title h2 {
+font-size: 20px;
+}
+
+.tracking-title p {
+margin-top: 4px;
+
+```
+color: #75827a;
+
+font-size: 13px;
+```
+
+}
+
+/* Status */
+
+.status {
+display: flex;
+align-items: center;
+gap: 8px;
+
+```
+font-size: 13px;
+
+font-weight: 600;
+```
+
+}
+
+.status-dot {
+width: 9px;
+height: 9px;
+
+```
+border-radius: 50%;
+
+background: #aaa;
+```
+
+}
+
+.status-dot.connected {
+background: #269653;
+}
+
+/* Map */
+
+.map-wrapper {
+position: relative;
+
+```
+flex: 1;
+```
+
+}
+
+#map {
+width: 100%;
+height: 100%;
+}
+
+/* Floating information card */
+
+.map-card {
+position: absolute;
+
+```
+z-index: 1000;
+
+left: 20px;
+bottom: 20px;
+
+width: 260px;
+
+background: white;
+
+border-radius: 14px;
+
+padding: 18px;
+
+box-shadow: 0 5px 25px rgba(0, 0, 0, 0.12);
+```
+
+}
+
+.map-card h3 {
+font-size: 16px;
+
+```
+margin-bottom: 12px;
+```
+
+}
+
+.map-info {
+display: flex;
+justify-content: space-between;
+
+```
+margin-top: 9px;
+
+font-size: 13px;
+```
+
+}
+
+.map-info span:first-child {
+color: #77847b;
+}
+
+.map-info span:last-child {
+font-weight: 600;
+}
+
+/* Delivery page */
+
+.delivery-controls {
+position: absolute;
+
+```
+z-index: 1000;
+
+right: 20px;
+bottom: 20px;
+
+background: white;
+
+padding: 15px;
+
+border-radius: 12px;
+
+box-shadow: 0 5px 25px rgba(0, 0, 0, 0.12);
+```
+
+}
+
+.delivery-controls button {
+border: none;
+
+```
+padding: 10px 15px;
+
+border-radius: 8px;
+
+background: #269653;
+
+color: white;
+
+font-weight: 700;
+
+cursor: pointer;
+```
+
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+```
+.nav-links {
+    display: none;
+}
+
+.hero {
+    padding: 55px 20px;
+}
+
+.hero h1 {
+    font-size: 40px;
+}
+
+.stats {
+    grid-template-columns: 1fr;
+}
+
+.buttons {
+    flex-direction: column;
+}
+
+.tracking-header {
+    padding: 0 15px;
+}
+
+.map-card {
+    left: 10px;
+    bottom: 10px;
+    width: calc(100% - 20px);
+}
+```
+
+}
+.delivery-marker {
+    background: white;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 24px;
+
+    border: 3px solid #269653;
+
+    box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+
+    text-align: center;
+}
