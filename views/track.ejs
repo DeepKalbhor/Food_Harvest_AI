@@ -1,150 +1,423 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 
 <head>
 
-    <title>Track Delivery</title>
+```
+<meta charset="UTF-8">
 
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <style>
+<title>Track Delivery | Food Harvest AI</title>
 
-        body {
-            margin: 0;
-            font-family: Arial;
-        }
+<link
+    rel="stylesheet"
+    href="/css/style.css"
+>
 
-        h2 {
-            text-align: center;
-        }
-
-        #map {
-            height: 80vh;
-        }
-
-    </style>
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
+```
 
 </head>
 
-
 <body>
 
-    <h2>
-        Track Your Delivery
-    </h2>
+<div class="tracking-page">
 
-    <p style="text-align:center">
-        Order ID: <%= orderId %>
-    </p>
+```
+<div class="tracking-header">
+
+
+    <div class="tracking-title">
+
+        <h2>
+            📍 Live Delivery Tracking
+        </h2>
+
+        <p>
+            Tracking room: <%= orderId %>
+        </p>
+
+    </div>
+
+
+    <div class="status">
+
+        <div
+            id="statusDot"
+            class="status-dot"
+        ></div>
+
+        <span id="statusText">
+            Connecting...
+        </span>
+
+    </div>
+
+
+</div>
+
+
+
+<div class="map-wrapper">
+
 
     <div id="map"></div>
 
 
-    <script src="/socket.io/socket.io.js"></script>
-
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-    </script>
+    <div class="map-card">
 
 
-    <script>
+        <h3>
+            🚚 Delivery Partner
+        </h3>
 
-        const socket = io();
 
-        const orderId = "<%= orderId %>";
+        <div class="map-info">
 
-        const role = "client";
+            <span>
+                Status
+            </span>
+
+            <span id="deliveryStatus">
+                Waiting for location
+            </span>
+
+        </div>
+
+
+        <div class="map-info">
+
+            <span>
+                Latitude
+            </span>
+
+            <span id="latitude">
+                --
+            </span>
+
+        </div>
+
+
+        <div class="map-info">
+
+            <span>
+                Longitude
+            </span>
+
+            <span id="longitude">
+                --
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+</div>
+```
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<script>
+
+
+const socket = io();
+
+
+const roomId = "<%= orderId %>";
+
+
+/* =========================
+   MAP
+========================= */
+
+
+const map = L.map("map")
+    .setView(
+        [23.0225, 72.5714],
+        13
+    );
+
+
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        attribution:
+            "&copy; OpenStreetMap contributors"
+    }
+).addTo(map);
+
+
+/* =========================
+   DELIVERY ICON
+========================= */
+
+
+const deliveryIcon = L.divIcon({
+
+    className: "",
+
+    html: `
+        <div style="
+            width:44px;
+            height:44px;
+            border-radius:50%;
+            background:#269653;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:24px;
+            border:3px solid white;
+            box-shadow:0 3px 15px rgba(0,0,0,.3);
+        ">
+            🚚
+        </div>
+    `,
+
+    iconSize: [44, 44],
+
+    iconAnchor: [22, 22]
+
+});
+
+
+let deliveryMarker = null;
+
+
+/* =========================
+   NGO MARKER
+========================= */
+
+
+/*
+   Demo NGO location.
+
+   Change these coordinates later
+   to your actual NGO location.
+*/
+
+const ngoLatitude = 23.0258;
+
+const ngoLongitude = 72.5873;
+
+
+const ngoIcon = L.divIcon({
+
+    className: "",
+
+    html: `
+        <div style="
+            width:38px;
+            height:38px;
+            border-radius:50%;
+            background:white;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:22px;
+            border:3px solid #269653;
+            box-shadow:0 3px 12px rgba(0,0,0,.2);
+        ">
+            📍
+        </div>
+    `,
+
+    iconSize: [38, 38],
+
+    iconAnchor: [19, 19]
+
+});
+
+
+L.marker(
+    [
+        ngoLatitude,
+        ngoLongitude
+    ],
+    {
+        icon: ngoIcon
+    }
+)
+.addTo(map)
+.bindPopup(
+    "📍 NGO / Food Destination"
+);
+
+
+/* =========================
+   SOCKET
+========================= */
+
+
+socket.on("connect", function() {
+
+
+    console.log(
+        "Tracking connected:",
+        socket.id
+    );
+
+
+    document
+        .getElementById("statusDot")
+        .classList
+        .add("connected");
+
+
+    document
+        .getElementById("statusText")
+        .innerText =
+        "Live";
+
+
+    /* Join same room */
+
+    socket.emit(
+        "join-order",
+        {
+
+            orderId: roomId,
+
+            role: "client"
+
+        }
+    );
+
+});
+
+
+/* =========================
+   RECEIVE LOCATION
+========================= */
+
+
+socket.on(
+    "receive-location",
+    function(data) {
 
 
         console.log(
-            "Customer tracking:",
-            orderId
+            "Received:",
+            data
         );
 
 
-        // Join order
-        socket.emit(
-            "join-order",
-            {
-                orderId: orderId,
-                role: role
-            }
-        );
+        const latitude =
+            Number(data.latitude);
 
 
-        // Create map
-        const map = L.map("map")
-            .setView([0, 0], 10);
+        const longitude =
+            Number(data.longitude);
 
 
-        L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            {
-                attribution:
-                    "© OpenStreetMap contributors"
-            }
-        ).addTo(map);
+        if (
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude)
+        ) {
+
+            return;
+
+        }
 
 
-        let deliveryMarker = null;
+        /* Update information */
+
+        document
+            .getElementById("latitude")
+            .innerText =
+            latitude.toFixed(6);
 
 
-        // Receive delivery partner location
-        socket.on(
-            "receive-location",
-            function(data) {
-
-                const latitude =
-                    data.latitude;
-
-                const longitude =
-                    data.longitude;
+        document
+            .getElementById("longitude")
+            .innerText =
+            longitude.toFixed(6);
 
 
-                console.log(
-                    "Delivery partner:",
-                    latitude,
-                    longitude
-                );
+        document
+            .getElementById("deliveryStatus")
+            .innerText =
+            "Live location received";
 
 
-                // Create marker
-                if (!deliveryMarker) {
-
-                    deliveryMarker =
-                        L.marker([
-                            latitude,
-                            longitude
-                        ]).addTo(map);
-
-                }
+        /* =====================
+           CREATE MARKER
+        ===================== */
 
 
-                // Move marker
-                else {
+        if (!deliveryMarker) {
 
-                    deliveryMarker.setLatLng([
+
+            deliveryMarker =
+                L.marker(
+                    [
                         latitude,
                         longitude
-                    ]);
-
-                }
-
-
-                // Center map
-                map.setView(
-                    [latitude, longitude],
-                    16
+                    ],
+                    {
+                        icon:
+                            deliveryIcon
+                    }
+                )
+                .addTo(map)
+                .bindPopup(
+                    "🚚 Delivery Partner"
                 );
 
-            }
+
+            deliveryMarker
+                .openPopup();
+
+
+        } else {
+
+
+            /* Move marker */
+
+            deliveryMarker
+                .setLatLng(
+                    [
+                        latitude,
+                        longitude
+                    ]
+                );
+
+        }
+
+
+        /* =====================
+           ZOOM TO DELIVERY
+        ===================== */
+
+
+        map.setView(
+            [
+                latitude,
+                longitude
+            ],
+            17
         );
 
-    </script>
+    }
+);
+
+
+</script>
 
 </body>
 
