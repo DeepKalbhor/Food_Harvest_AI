@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+```
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Donate Food — Food Harvest AI</title>
+
+<link rel="stylesheet" href="/css/style.css">
+
+<style>
+
+    .form-container {
+        max-width: 650px;
+        margin: 60px auto;
+        padding: 35px;
+
+        background: white;
+        border-radius: 18px;
+
+        border: 1px solid #e4eee7;
+    }
+
+    .form-container h1 {
+        margin-bottom: 10px;
+    }
+
+    .form-description {
+        color: #718078;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 13px;
+
+        border: 1px solid #d7e3db;
+        border-radius: 8px;
+
+        font-size: 15px;
+    }
+
+    .form-submit {
+        width: 100%;
+        padding: 15px;
+
+        border: none;
+        border-radius: 9px;
+
+        background: #269653;
+        color: white;
+
+        font-size: 16px;
+        font-weight: bold;
+
+        cursor: pointer;
+    }
+
+    .form-submit:hover {
+        opacity: .9;
+    }
+
+</style>
+```
+
+</head>
+
+<body>
+
+```
+<nav class="navbar">
+
+    <div class="logo">
+        🍱 Food Harvest AI
+    </div>
+
+    <div class="nav-links">
+
+        <a href="/">
+            Home
+        </a>
+
+        <a href="/donate">
+            Donate Food
+        </a>
+
+    </div>
+
+</nav>
+
+
+<div class="form-container">
+
+    <h1>🍲 Donate Surplus Food</h1>
+
+    <p class="form-description">
+        Enter the details of your available food.
+        Food Harvest AI will find the best nearby NGO.
+    </p>
+
+
+    <form id="donationForm">
+
+        <div class="form-group">
+
+            <label>
+                Food Name
+            </label>
+
+            <input
+                type="text"
+                id="foodName"
+                placeholder="e.g. Vegetable Biryani"
+                required
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Quantity
+            </label>
+
+            <input
+                type="number"
+                id="quantity"
+                placeholder="e.g. 25"
+                required
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Unit
+            </label>
+
+            <select id="unit">
+
+                <option value="kg">
+                    Kilograms
+                </option>
+
+                <option value="meals">
+                    Meals
+                </option>
+
+                <option value="packets">
+                    Packets
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Pickup Location
+            </label>
+
+            <input
+                type="text"
+                id="location"
+                value="Ahmedabad"
+                required
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Expiry Time
+            </label>
+
+            <input
+                type="time"
+                id="expiry"
+                required
+            >
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="form-submit"
+        >
+            🤖 Find Best NGO
+        </button>
+
+    </form>
+
+</div>
+
+
+<script>
+
+    document
+        .getElementById("donationForm")
+        .addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+
+            // Minimal prototype:
+            // show the AI matching result.
+
+            const food =
+                document.getElementById("foodName").value;
+
+            const quantity =
+                document.getElementById("quantity").value;
+
+            const unit =
+                document.getElementById("unit").value;
+
+
+            // Store demo information
+            // for the next page.
+
+            sessionStorage.setItem(
+                "foodName",
+                food
+            );
+
+            sessionStorage.setItem(
+                "quantity",
+                quantity
+            );
+
+            sessionStorage.setItem(
+                "unit",
+                unit
+            );
+
+
+            window.location.href =
+                "/matching";
+
+        });
+
+</script>
+```
+
+</body>
+
+</html>
