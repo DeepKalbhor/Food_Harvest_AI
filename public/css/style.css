@@ -289,3 +289,20 @@ html, body {
         width: min(260px, calc(100% - 20px));
     }
 }
+
+.donate-btn {
+    display: inline-block;
+    background: #198754;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    margin: 8px;
+    transition: background 0.2s ease;
+}
+
+.donate-btn:hover {
+    background: #146c43;
+    color: white;
+}
