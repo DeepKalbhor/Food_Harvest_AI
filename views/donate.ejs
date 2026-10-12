@@ -1,270 +1,81 @@
+
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
-```
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Donate Food — Food Harvest AI</title>
-
-<link rel="stylesheet" href="/css/style.css">
-
-<style>
-
-    .form-container {
-        max-width: 650px;
-        margin: 60px auto;
-        padding: 35px;
-
-        background: white;
-        border-radius: 18px;
-
-        border: 1px solid #e4eee7;
-    }
-
-    .form-container h1 {
-        margin-bottom: 10px;
-    }
-
-    .form-description {
-        color: #718078;
-        margin-bottom: 30px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-    }
-
-    .form-group input,
-    .form-group select {
-        width: 100%;
-        padding: 13px;
-
-        border: 1px solid #d7e3db;
-        border-radius: 8px;
-
-        font-size: 15px;
-    }
-
-    .form-submit {
-        width: 100%;
-        padding: 15px;
-
-        border: none;
-        border-radius: 9px;
-
-        background: #269653;
-        color: white;
-
-        font-size: 16px;
-        font-weight: bold;
-
-        cursor: pointer;
-    }
-
-    .form-submit:hover {
-        opacity: .9;
-    }
-
-</style>
-```
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donate Food | Food Harvest AI</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-
 <body>
 
-```
 <nav class="navbar">
-
-    <div class="logo">
-        🍱 Food Harvest AI
-    </div>
-
-    <div class="nav-links">
-
-        <a href="/">
-            Home
-        </a>
-
-        <a href="/donate">
-            Donate Food
-        </a>
-
-    </div>
-
+    <div class="logo">🍱 Food Harvest <span>AI</span></div>
+    <div class="nav-links"><a href="/">Home</a></div>
 </nav>
 
+<main class="hero">
+    <section class="hero-content">
+        <div class="badge">Food Redistribution</div>
+        <h1>Donate Surplus <span>Food.</span></h1>
+        <p class="hero-description">
+            Share available food with an NGO in your area.
+        </p>
+    </section>
 
-<div class="form-container">
+    <form id="donationForm" class="stat-card"
+          style="max-width:550px;margin:35px auto;text-align:left">
 
-    <h1>🍲 Donate Surplus Food</h1>
+        <label for="foodName">Food name</label>
+        <input id="foodName" required placeholder="e.g. Vegetable Biryani"
+               style="width:100%;padding:12px;margin:8px 0 18px">
 
-    <p class="form-description">
-        Enter the details of your available food.
-        Food Harvest AI will find the best nearby NGO.
-    </p>
+        <label for="quantity">Quantity</label>
+        <input id="quantity" type="number" min="0.1" step="any"
+               required placeholder="e.g. 25"
+               style="width:100%;padding:12px;margin:8px 0 18px">
 
+        <label for="unit">Unit</label>
+        <select id="unit"
+                style="width:100%;padding:12px;margin:8px 0 18px">
+            <option value="kg">Kilograms</option>
+            <option value="meals">Meals</option>
+            <option value="packets">Packets</option>
+        </select>
 
-    <form id="donationForm">
+        <label for="location">Pickup location</label>
+        <input id="location" required placeholder="e.g. Ahmedabad"
+               style="width:100%;padding:12px;margin:8px 0 22px">
 
-        <div class="form-group">
-
-            <label>
-                Food Name
-            </label>
-
-            <input
-                type="text"
-                id="foodName"
-                placeholder="e.g. Vegetable Biryani"
-                required
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                Quantity
-            </label>
-
-            <input
-                type="number"
-                id="quantity"
-                placeholder="e.g. 25"
-                required
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                Unit
-            </label>
-
-            <select id="unit">
-
-                <option value="kg">
-                    Kilograms
-                </option>
-
-                <option value="meals">
-                    Meals
-                </option>
-
-                <option value="packets">
-                    Packets
-                </option>
-
-            </select>
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                Pickup Location
-            </label>
-
-            <input
-                type="text"
-                id="location"
-                value="Ahmedabad"
-                required
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label>
-                Expiry Time
-            </label>
-
-            <input
-                type="time"
-                id="expiry"
-                required
-            >
-
-        </div>
-
-
-        <button
-            type="submit"
-            class="form-submit"
-        >
-            🤖 Find Best NGO
+        <button type="submit" class="btn btn-primary"
+                style="width:100%;border:0;cursor:pointer">
+            Find Nearby NGO
         </button>
-
     </form>
-
-</div>
-
+</main>
 
 <script>
+document.getElementById("donationForm").addEventListener("submit", function(e) {
+    e.preventDefault();
 
-    document
-        .getElementById("donationForm")
-        .addEventListener("submit", function(event) {
+    const food = document.getElementById("foodName").value.trim();
+    const quantity = Number(document.getElementById("quantity").value);
+    const unit = document.getElementById("unit").value;
+    const location = document.getElementById("location").value.trim();
 
-            event.preventDefault();
+    if (!food || !location || !Number.isFinite(quantity) || quantity <= 0) {
+        alert("Please enter valid food details.");
+        return;
+    }
 
+    sessionStorage.setItem("foodName", food);
+    sessionStorage.setItem("quantity", String(quantity));
+    sessionStorage.setItem("unit", unit);
+    sessionStorage.setItem("pickupLocation", location);
 
-            // Minimal prototype:
-            // show the AI matching result.
-
-            const food =
-                document.getElementById("foodName").value;
-
-            const quantity =
-                document.getElementById("quantity").value;
-
-            const unit =
-                document.getElementById("unit").value;
-
-
-            // Store demo information
-            // for the next page.
-
-            sessionStorage.setItem(
-                "foodName",
-                food
-            );
-
-            sessionStorage.setItem(
-                "quantity",
-                quantity
-            );
-
-            sessionStorage.setItem(
-                "unit",
-                unit
-            );
-
-
-            window.location.href =
-                "/matching";
-
-        });
-
+    window.location.href = "/matching";
+});
 </script>
-```
 
 </body>
-
 </html>
