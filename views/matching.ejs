@@ -1,139 +1,311 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NGO Matching | Food Harvest AI</title>
-    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 28px 16px;
+            font-family: Arial, sans-serif;
+            background: #f5f7f4;
+            color: #26332b;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #69756d;
+            margin-bottom: 24px;
+        }
+
+        #message {
+            display: none;
+            padding: 14px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            background: #e8f5e9;
+            color: #216b35;
+            overflow-wrap: anywhere;
+        }
+
+        #message.error {
+            background: #ffebee;
+            color: #b42318;
+        }
+
+        #ngoList {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .ngo-card {
+            background: white;
+            border: 1px solid #e0e7e1;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .ngo-card h2 {
+            font-size: 19px;
+            margin: 0 0 12px;
+        }
+
+        .detail {
+            color: #68746b;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+
+        .distance {
+            font-weight: bold;
+            color: #277443;
+        }
+
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 14px;
+            background: #278447;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d6837;
+        }
+
+        button:disabled {
+            background: #9ba69e;
+            cursor: not-allowed;
+        }
+
+        .empty {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            color: #68746b;
+        }
+
+        a {
+            color: #216b35;
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body>
-
-<nav class="navbar">
-    <div class="logo">🍱 Food Harvest <span>AI</span></div>
-    <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/donate">Donate Again</a>
-    </div>
-</nav>
-
-<main class="hero">
-    <section class="hero-content">
-        <div class="badge">Food Redistribution</div>
-        <h1>Finding Your <span>NGO Match.</span></h1>
-        <p class="hero-description">
-            We are checking verified NGOs near your pickup location.
-        </p>
-    </section>
-
-    <section class="stat-card"
-             style="max-width:550px;margin:35px auto;text-align:left;padding:28px">
-
-        <p id="statusMessage" role="status">
-            Searching for the nearest verified NGO...
+    <main class="container">
+        <h1>Find a Matching NGO</h1>
+        <p class="subtitle">
+            Choose an eligible NGO to create a donation order and enable tracking.
         </p>
 
-        <div id="matchDetails" hidden>
-            <hr style="margin:20px 0">
+        <div id="message" role="status" aria-live="polite"></div>
 
-            <h2 id="foodTitle"></h2>
-            <p id="foodQuantity"></p>
-
-            <hr style="margin:20px 0">
-
-            <p style="color:#198754;font-weight:600">
-                Recommended NGO
-            </p>
-
-            <h2 id="ngoName"></h2>
-            <p id="ngoAddress"></p>
-            <p id="ngoDistance"></p>
-            <p id="ngoCapacity"></p>
-
-            <p style="font-size:13px;color:#666">
-                Recommendation based on distance and NGO verification.
-                Availability should be confirmed with the NGO.
-            </p>
+        <div id="ngoList">
+            <p>Finding eligible NGOs...</p>
         </div>
+    </main>
 
-        <div style="margin-top:25px">
-            <a href="/donate" class="btn btn-primary"
-               style="display:inline-block;text-decoration:none">
-                Donate More Food
-            </a>
+    <script>
+        const ngoList = document.getElementById("ngoList");
+        const message = document.getElementById("message");
 
-            <a href="/delivery/demo" class="track-btn"
-               style="display:inline-block;margin:8px;text-decoration:none">
-                📍 Open Demo Tracking
-            </a>
-        </div>
-    </section>
-</main>
+        const foodId = Number(sessionStorage.getItem("foodId"));
 
-<script>
-async function findNGOMatch() {
-    const statusMessage = document.getElementById("statusMessage");
-    const matchDetails = document.getElementById("matchDetails");
+        let orderCreated = false;
 
-    const foodId = sessionStorage.getItem("foodId");
+        function showMessage(text, isError = false) {
+            message.style.display = "block";
+            message.className = isError ? "error" : "";
+            message.textContent = text;
+        }
 
-    if (!foodId) {
-        statusMessage.textContent =
-            "No saved donation was found. Please submit the donation form first.";
-        return;
-    }
+        function addTextElement(parent, tag, className, text) {
+            const element = document.createElement(tag);
+            if (className) element.className = className;
+            element.textContent = text;
+            parent.appendChild(element);
+            return element;
+        }
 
-    try {
-        const response = await fetch(
-            "/api/matching-ngo?foodId=" + encodeURIComponent(foodId),
-            {
-                headers: { "Accept": "application/json" }
+        async function loadNGOs() {
+            if (!Number.isInteger(foodId) || foodId <= 0) {
+                ngoList.innerHTML = "";
+                showMessage(
+                    "Donation ID was not found. Please submit your donation again.",
+                    true
+                );
+                return;
             }
-        );
 
-        const text = await response.text();
-        let result;
+            try {
+                const response = await fetch(
+                    "/api/matching-ngo?foodId=" + encodeURIComponent(foodId)
+                );
 
-        try {
-            result = JSON.parse(text);
-        } catch {
-            throw new Error("The server returned an invalid response.");
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || "Unable to load NGOs.");
+                }
+
+                const ngos = result.ngos || [];
+                ngoList.innerHTML = "";
+
+                if (ngos.length === 0) {
+                    addTextElement(
+                        ngoList,
+                        "p",
+                        "empty",
+                        "No eligible NGOs were found for this donation."
+                    );
+                    return;
+                }
+
+                ngos.forEach(function(ngo) {
+                    const card = document.createElement("article");
+                    card.className = "ngo-card";
+
+                    addTextElement(
+                        card,
+                        "h2",
+                        "",
+                        ngo.name || ngo.ngo_name || ("NGO #" + ngo.ngo_id)
+                    );
+
+                    if (ngo.address) {
+                        addTextElement(card, "p", "detail", ngo.address);
+                    }
+
+                    if (ngo.distance_km !== undefined) {
+                        addTextElement(
+                            card,
+                            "p",
+                            "detail distance",
+                            "Distance: " +
+                            Number(ngo.distance_km).toFixed(2) + " km"
+                        );
+                    }
+
+                    if (ngo.capacity !== undefined) {
+                        addTextElement(
+                            card,
+                            "p",
+                            "detail",
+                            "Available capacity: " + ngo.capacity
+                        );
+                    }
+
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.textContent = "Select NGO & Create Order";
+
+                    button.addEventListener("click", function() {
+                        createOrder(ngo.ngo_id, button);
+                    });
+
+                    card.appendChild(button);
+                    ngoList.appendChild(card);
+                });
+
+            } catch (error) {
+                ngoList.innerHTML = "";
+                showMessage(error.message || "Unable to load matching NGOs.", true);
+            }
         }
 
-        if (!response.ok || !result.success) {
-            throw new Error(
-                result.error || "No matching NGO was found."
-            );
+        async function createOrder(ngoId, clickedButton) {
+            if (orderCreated) return;
+
+            if (!ngoId) {
+                showMessage("This NGO has no valid ID.", true);
+                return;
+            }
+
+            const buttons = ngoList.querySelectorAll("button");
+            buttons.forEach(function(button) {
+                button.disabled = true;
+            });
+
+            clickedButton.textContent = "Creating order...";
+
+            try {
+                const response = await fetch("/api/create-order", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        foodId: foodId,
+                        ngoId: Number(ngoId)
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Order creation failed.");
+                }
+
+                orderCreated = true;
+                showMessage(
+                    "Order created successfully! Order ID: " + result.orderId
+                );
+
+                buttons.forEach(function(button) {
+                    button.textContent = "Order Created";
+                });
+
+                const trackingLink = document.createElement("a");
+                trackingLink.href = result.trackingUrl;
+                trackingLink.textContent = "Open Live Tracking";
+                trackingLink.style.display = "inline-block";
+                trackingLink.style.marginTop = "12px";
+
+                const deliveryLink = document.createElement("a");
+                deliveryLink.href = result.deliveryUrl;
+                deliveryLink.textContent = "Open Delivery Partner Page";
+                deliveryLink.style.display = "inline-block";
+                deliveryLink.style.marginTop = "12px";
+                deliveryLink.style.marginLeft = "16px";
+
+                message.appendChild(document.createElement("br"));
+                message.appendChild(trackingLink);
+                message.appendChild(deliveryLink);
+
+            } catch (error) {
+                showMessage(error.message || "Unable to create order.", true);
+
+                buttons.forEach(function(button) {
+                    button.disabled = false;
+                });
+
+                clickedButton.textContent = "Select NGO & Create Order";
+            }
         }
 
-        document.getElementById("foodTitle").textContent =
-            result.food.food_name;
-
-        document.getElementById("foodQuantity").textContent =
-            "Quantity: " + result.food.quantity + " " + result.food.unit;
-
-        document.getElementById("ngoName").textContent =
-            result.ngo.ngo_name;
-
-        document.getElementById("ngoAddress").textContent =
-            result.ngo.address || "Address not available";
-
-        document.getElementById("ngoDistance").textContent =
-            "Distance: " + result.ngo.distance_km.toFixed(1) + " km";
-
-        document.getElementById("ngoCapacity").textContent =
-            "Listed capacity: " + result.ngo.capacity;
-
-        matchDetails.hidden = false;
-        statusMessage.textContent = "Your nearest verified NGO match is ready.";
-
-    } catch (error) {
-        console.error("NGO matching failed:", error);
-        statusMessage.textContent = error.message;
-    }
-}
-
-findNGOMatch();
-</script>
-
+        loadNGOs();
+    </script>
 </body>
 </html>
