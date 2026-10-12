@@ -1,177 +1,191 @@
+```html
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGO Matching | Food Harvest AI</title>
+    <link rel="stylesheet" href="/css/style.css">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <style>
+        .ngo-list {
+            max-width: 750px;
+            margin: 30px auto;
+            display: grid;
+            gap: 16px;
+            text-align: left;
+        }
 
-    <title>Food Harvest AI</title>
+        .ngo-card {
+            padding: 22px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            color: #222;
+        }
 
-    <link
-        rel="stylesheet"
-        href="/css/style.css"
-    >
+        .ngo-card h2 {
+            margin: 0 0 10px;
+            font-size: 21px;
+        }
 
+        .ngo-card p {
+            margin: 7px 0;
+        }
+
+        .ngo-distance {
+            color: #198754;
+            font-weight: 600;
+        }
+
+        .match-number {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: 5px 9px;
+            background: #eef7f0;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .ngo-note {
+            color: #666;
+            font-size: 13px;
+        }
+    </style>
 </head>
-
-
 <body>
 
-
 <nav class="navbar">
-
-    <div class="logo">
-        🍱 Food Harvest <span>AI</span>
-    </div>
-
-
+    <div class="logo">🍱 Food Harvest <span>AI</span></div>
     <div class="nav-links">
-
-        <a href="/">
-            Home
-        </a>
-
-        <a href="/delivery/demo">
-            Delivery
-        </a>
-
-        <a href="/track/demo">
-            Track
-        </a>
-      <a href="/donate" class="donate-btn">
-    🍱 Donate Food
-</a>
+        <a href="/">Home</a>
+        <a href="/donate">Donate Again</a>
     </div>
-
 </nav>
 
-
-
 <main class="hero">
-
-
     <section class="hero-content">
-
-
-        <div class="badge">
-            AI-Powered Food Redistribution
-        </div>
-
-
-        <h1>
-
-            Turn Surplus Food
-
-            <br>
-
-            Into <span>Social Impact.</span>
-
-        </h1>
-
-
+        <div class="badge">Food Redistribution</div>
+        <h1>Find Your <span>NGO Match.</span></h1>
         <p class="hero-description">
-
-            Food Harvest AI connects surplus food
-            with nearby NGOs and enables
-            real-time delivery tracking.
-
+            Compare verified NGOs near your pickup location.
         </p>
-
-
-        <div class="buttons">
-
-
-            <a
-                href="/delivery/demo"
-                class="btn btn-primary"
-            >
-                🚚 Start Delivery
-            </a>
-
-
-            <a
-                href="/track/demo"
-                class="btn btn-secondary"
-            >
-                📍 Track Delivery
-            </a>
-
-
-        </div>
-
-
     </section>
 
+    <section class="stat-card"
+             style="max-width:750px;margin:25px auto;padding:25px">
 
-
-    <section class="stats">
-
-
-        <div class="stat-card">
-
-            <div class="icon">
-                🍚
-            </div>
-
-            <h2>
-                125 kg
-            </h2>
-
-            <p>
-                Food Rescued
-            </p>
-
-        </div>
-
-
-
-        <div class="stat-card">
-
-            <div class="icon">
-                🤝
-            </div>
-
-            <h2>
-                12
-            </h2>
-
-            <p>
-                NGOs Connected
-            </p>
-
-        </div>
-
-
-
-        <div class="stat-card">
-
-            <div class="icon">
-                🌱
-            </div>
-
-            <h2>
-                86
-            </h2>
-
-            <p>
-                Deliveries
-            </p>
-
-        </div>
-
-
+        <h2>Your Donation</h2>
+        <p id="foodDetails">Loading donation details...</p>
+        <p id="statusMessage" role="status">
+            Searching for verified NGOs...
+        </p>
     </section>
 
+    <section id="ngoList" class="ngo-list"></section>
 
+    <p class="ngo-note" style="text-align:center">
+        NGOs are ranked by distance. Listed capacity does not guarantee
+        acceptance; please confirm availability with the NGO.
+    </p>
+
+    <div style="text-align:center;margin:30px">
+        <a href="/donate" class="btn btn-primary"
+           style="text-decoration:none">
+            Donate More Food
+        </a>
+
+        <a href="/delivery/demo" class="track-btn"
+           style="display:inline-block;margin:8px;text-decoration:none">
+            📍 Open Demo Tracking
+        </a>
+    </div>
 </main>
 
+<script>
+async function loadNGOMatches() {
+    const status = document.getElementById("statusMessage");
+    const list = document.getElementById("ngoList");
+    const foodDetails = document.getElementById("foodDetails");
+    const foodId = sessionStorage.getItem("foodId");
+
+    if (!foodId) {
+        status.textContent =
+            "No saved donation found. Please submit the donation form first.";
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/matching-ngo?foodId=" + encodeURIComponent(foodId),
+            { headers: { "Accept": "application/json" } }
+        );
+
+        const text = await response.text();
+        let result;
+
+        try {
+            result = JSON.parse(text);
+        } catch {
+            throw new Error("Invalid server response. Check Render logs.");
+        }
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || "Unable to find NGOs.");
+        }
+
+        foodDetails.textContent =
+            result.food.food_name + " — " +
+            result.food.quantity + " " + result.food.unit;
+
+        list.replaceChildren();
+
+        if (!result.ngos || result.ngos.length === 0) {
+            status.textContent =
+                "No verified NGOs with available capacity were found.";
+            return;
+        }
+
+        status.textContent =
+            result.ngos.length + " verified NGO(s) found, ranked by distance.";
+
+        result.ngos.forEach(function(ngo, index) {
+            const card = document.createElement("article");
+            card.className = "ngo-card";
+
+            const rank = document.createElement("span");
+            rank.className = "match-number";
+            rank.textContent = index === 0
+                ? "Nearest match"
+                : "Match #" + (index + 1);
+
+            const name = document.createElement("h2");
+            name.textContent = ngo.ngo_name;
+
+            const address = document.createElement("p");
+            address.textContent = ngo.address || "Address not available";
+
+            const distance = document.createElement("p");
+            distance.className = "ngo-distance";
+            distance.textContent =
+                Number(ngo.distance_km).toFixed(1) + " km away";
+
+            const capacity = document.createElement("p");
+            capacity.textContent = "Listed capacity: " + ngo.capacity;
+
+            card.append(rank, name, address, distance, capacity);
+            list.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("NGO matching failed:", error);
+        status.textContent = error.message;
+    }
+}
+
+loadNGOMatches();
+</script>
 
 </body>
-
 </html>
+```
