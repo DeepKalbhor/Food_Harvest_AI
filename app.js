@@ -338,19 +338,20 @@ app.post("/api/donations", async function(req, res) {
         const restaurantId = 1;
 
         // Get coordinates for the existing restaurant
-        const [restaurants] = await db.query(
-            `SELECT latitude, longitude
-             FROM Restaurants
-             WHERE restaurant_id = ?`,
-            [restaurantId]
-        );
+      // Get coordinates for the existing restaurant
+const [restaurants] = await db.query(
+    "SELECT latitude, longitude " +
+    "FROM Restaurants " +
+    "WHERE restaurant_id = ?",
+    [restaurantId]
+);
 
-        if (restaurants.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: "Restaurant record not found."
-            });
-        }
+      if (restaurants.length === 0) {
+    return res.status(400).json({
+        success: false,
+        error: "Restaurant record not found."
+    });
+}
 
         // Set preparation time to now and expiry to 24 hours later
         const preparedTime = new Date();
