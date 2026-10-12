@@ -8,307 +8,112 @@ const http = require("http");
 const socketio = require("socket.io");
 const mysql = require("mysql2/promise");
 
-
-// ========================================
 // SERVER SETUP
-// ========================================
-
 const server = http.createServer(app);
 const io = socketio(server);
 
-
-// ========================================
 // MIDDLEWARE
-// ========================================
-
 app.set("view engine", "ejs");
-
-app.use(
-    express.static(
-        path.join(__dirname, "public")
-    )
-);
-
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-
-// ========================================
 // MYSQL CONNECTION
-// ========================================
-
 const db = mysql.createPool({
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-
     ssl: {
-        ca: fs.readFileSync(
-            path.join(__dirname, "ca.pem")
-        )
+        ca: fs.readFileSync(path.join(__dirname, "ca.pem"))
     },
-
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
 
-
-// ========================================
-// TEST MYSQL CONNECTION
-// ========================================
-
+// TEST DATABASE CONNECTION
 async function testDatabase() {
-
     try {
-
         const [rows] = await db.query(
             "SELECT COUNT(*) AS total FROM Orders"
         );
 
         console.log("MySQL connected");
-
-        console.log(
-            "Total orders:",
-            rows[0].total
-        );
-
+        console.log("Total orders:", rows[0].total);
     } catch (error) {
-
-        console.error(
-            "MySQL connection failed:",
-            error.message
-        );
-
+        console.error("MySQL connection failed:", error.message);
     }
-
 }
 
 testDatabase();
 
-
-// ========================================
-// SOCKET.IO
-// REAL-TIME TRACKING
-// ========================================
-
+// SOCKET.IO REAL-TIME TRACKING
 io.on("connection", function(socket) {
+    console.log("User connected:", socket.id);
 
-    console.log(
-        "User connected:",
-        socket.id
-    );
+    socket.on("join-order", function(data) {
+        const { orderId, role } = data;
 
-
-    // ------------------------------------
-    // JOIN ORDER ROOM
-    // ------------------------------------
-
-    socket.on(
-        "join-order",
-        function(data) {
-
-            const {
-                orderId,
-                role
-            } = data;
-
-
-            if (!orderId || !role) {
-
-                return;
-
-            }
-
-
-            // Join room using order ID
-
-            socket.join(orderId);
-
-
-            // Store information on socket
-
-            socket.orderId = orderId;
-
-            socket.role = role;
-
-
-            console.log(
-                `${role} joined order ${orderId}`
-            );
-
+        if (!orderId || !role) {
+            return;
         }
-    );
 
+        socket.join(String(orderId));
+        socket.orderId = String(orderId);
+        socket.role = role;
 
-    // ------------------------------------
-    // DELIVERY SENDS LOCATION
-    // ------------------------------------
+        console.log(`${role} joined order ${orderId}`);
+    });
 
-    socket.on(
-        "send-location",
-        function(data) {
-
-
-            // Check order
-
-            if (!socket.orderId) {
-
-                return;
-
-            }
-
-
-            // Only delivery device
-            // can send location
-
-            if (socket.role !== "delivery") {
-
-                return;
-
-            }
-
-
-            console.log(
-                "Location received:",
-                data.latitude,
-                data.longitude
-            );
-
-
-            // Send location to
-            // everyone in same order room
-
-            io.to(socket.orderId).emit(
-                "receive-location",
-                {
-
-                    latitude:
-                        data.latitude,
-
-                    longitude:
-                        data.longitude
-
-                }
-            );
-
+    socket.on("send-location", function(data) {
+        if (!socket.orderId || socket.role !== "delivery") {
+            return;
         }
-    );
 
+        console.log(
+            "Location received:",
+            data.latitude,
+            data.longitude
+        );
 
-    // ------------------------------------
-    // DISCONNECT
-    // ------------------------------------
+        io.to(socket.orderId).emit("receive-location", {
+            latitude: data.latitude,
+            longitude: data.longitude
+        });
+    });
 
-    socket.on(
-        "disconnect",
-        function() {
-
-            console.log(
-                "User disconnected:",
-                socket.id
-            );
-
-        }
-    );
-
+    socket.on("disconnect", function() {
+        console.log("User disconnected:", socket.id);
+    });
 });
 
-
-// ========================================
 // PAGE ROUTES
-// ========================================
+app.get("/", function(req, res) {
+    res.render("index");
+});
 
+app.get("/donate", function(req, res) {
+    res.render("donate");
+});
 
-// ----------------------------------------
-// HOME PAGE
-// ----------------------------------------
+app.get("/matching", function(req, res) {
+    res.render("matching");
+});
 
-app.get(
-    "/",
-    function(req, res) {
+app.get("/delivery/:orderId", function(req, res) {
+    res.render("delivery", {
+        orderId: req.params.orderId
+    });
+});
 
-        res.render("index");
+app.get("/track/:orderId", function(req, res) {
+    res.render("track", {
+        orderId: req.params.orderId
+    });
+});
 
-    }
-);
-
-// ----------------------------------------
-// DONATE FOOD PAGE
-// ----------------------------------------
-
-app.get(
-    "/donate",
-    function(req, res) {
-
-        res.render("donate");
-
-    }
-);
-
-
-// ----------------------------------------
-// AI MATCHING PAGE
-// ----------------------------------------
-
-app.get(
-    "/matching",
-    function(req, res) {
-
-        res.render("matching");
-
-    }
-);
-
-
-// ----------------------------------------
-// DELIVERY TRACKING PAGE
-// ----------------------------------------
-
-app.get(
-    "/delivery/:orderId",
-    function(req, res) {
-
-        res.render(
-            "delivery",
-            {
-
-                orderId:
-                    req.params.orderId
-
-            }
-        );
-
-    }
-);
-
-
-// ----------------------------------------
-// NGO / CLIENT TRACKING PAGE
-// ----------------------------------------
-
-app.get(
-    "/track/:orderId",
-    function(req, res) {
-
-        res.render(
-            "track",
-            {
-
-                orderId:
-                    req.params.orderId
-
-            }
-        );
-
-    }
-);
-
-// ========================================
-// SAVE FOOD DONATION TO MYSQL
-// ========================================
-
+// SAVE FOOD DONATION
 app.post("/api/donations", async function(req, res) {
     try {
         const {
@@ -319,7 +124,6 @@ app.post("/api/donations", async function(req, res) {
             pickup_address
         } = req.body;
 
-        // Validate form data
         if (
             !food_name ||
             !category ||
@@ -334,63 +138,57 @@ app.post("/api/donations", async function(req, res) {
             });
         }
 
-        // Prototype: use existing restaurant ID 1
+        // Prototype uses the existing restaurant record.
         const restaurantId = 1;
 
-        // Get coordinates for the existing restaurant
-      // Get coordinates for the existing restaurant
-const [restaurants] = await db.query(
-    "SELECT latitude, longitude " +
-    "FROM Restaurants " +
-    "WHERE restaurant_id = ?",
-    [restaurantId]
-);
+        const [restaurants] = await db.query(
+            "SELECT latitude, longitude FROM Restaurants WHERE restaurant_id = ?",
+            [restaurantId]
+        );
 
-      if (restaurants.length === 0) {
-    return res.status(400).json({
-        success: false,
-        error: "Restaurant record not found."
-    });
-}
+        if (restaurants.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: "Restaurant record not found."
+            });
+        }
 
-        // Set preparation time to now and expiry to 24 hours later
         const preparedTime = new Date();
         const expiryTime = new Date(
             preparedTime.getTime() + 24 * 60 * 60 * 1000
         );
 
-        // Format dates for MySQL DATETIME
         function formatMySQLDate(date) {
             return date.toISOString().slice(0, 19).replace("T", " ");
         }
 
-      const [result] = await db.query(
-    `INSERT INTO FoodDonations (
-        restaurant_id,
-        food_name,
-        category,
-        quantity,
-        unit,
-        prepared_time,
-        expiry_time,
-        pickup_address,
-        latitude,
-        longitude,
-        status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Available')`,
-    [
-        restaurantId,
-        food_name.trim(),
-        category.trim(),
-        Number(quantity),
-        unit.trim(),
-        formatMySQLDate(preparedTime),
-        formatMySQLDate(expiryTime),
-        pickup_address.trim(),
-        restaurants[0].latitude,
-        restaurants[0].longitude
-    ]
-);
+        const [result] = await db.query(
+            `INSERT INTO FoodDonations (
+                restaurant_id,
+                food_name,
+                category,
+                quantity,
+                unit,
+                prepared_time,
+                expiry_time,
+                pickup_address,
+                latitude,
+                longitude,
+                status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Available')`,
+            [
+                restaurantId,
+                food_name.trim(),
+                category.trim(),
+                Number(quantity),
+                unit.trim(),
+                formatMySQLDate(preparedTime),
+                formatMySQLDate(expiryTime),
+                pickup_address.trim(),
+                restaurants[0].latitude,
+                restaurants[0].longitude
+            ]
+        );
 
         console.log("Donation saved. Food ID:", result.insertId);
 
@@ -399,7 +197,6 @@ const [restaurants] = await db.query(
             message: "Food donation saved successfully.",
             foodId: result.insertId
         });
-
     } catch (error) {
         console.error("Donation save error:", error);
 
@@ -409,10 +206,8 @@ const [restaurants] = await db.query(
         });
     }
 });
-// ========================================
-// FIND NEAREST VERIFIED NGO FOR A DONATION
-// ========================================
 
+// FIND MULTIPLE NGO MATCHES FOR A DONATION
 app.get("/api/matching-ngo", async function(req, res) {
     try {
         const foodId = Number(req.query.foodId);
@@ -424,11 +219,10 @@ app.get("/api/matching-ngo", async function(req, res) {
             });
         }
 
-        // Retrieve the saved donation
         const [foods] = await db.query(
-            "SELECT food_id, food_name, quantity, unit, latitude, longitude " +
-            "FROM FoodDonations " +
-            "WHERE food_id = ? AND status = 'Available'",
+            `SELECT food_id, food_name, quantity, unit, latitude, longitude
+             FROM FoodDonations
+             WHERE food_id = ? AND status = 'Available'`,
             [foodId]
         );
 
@@ -441,7 +235,7 @@ app.get("/api/matching-ngo", async function(req, res) {
 
         const food = foods[0];
 
-        // Find the nearest verified NGO with positive capacity
+        // Find up to 10 verified NGOs, nearest first.
         const [ngos] = await db.query(
             `SELECT
                 ngo_id,
@@ -467,20 +261,9 @@ app.get("/api/matching-ngo", async function(req, res) {
                AND latitude IS NOT NULL
                AND longitude IS NOT NULL
              ORDER BY distance_km ASC
-             LIMIT 1`,
-            [
-                food.latitude,
-                food.longitude,
-                food.latitude
-            ]
+             LIMIT 10`,
+            [food.latitude, food.longitude, food.latitude]
         );
-
-        if (ngos.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: "No verified NGO with available capacity was found."
-            });
-        }
 
         return res.json({
             success: true,
@@ -490,486 +273,170 @@ app.get("/api/matching-ngo", async function(req, res) {
                 quantity: food.quantity,
                 unit: food.unit
             },
-            ngo: {
-                ngo_id: ngos[0].ngo_id,
-                ngo_name: ngos[0].ngo_name,
-                address: ngos[0].address,
-                capacity: ngos[0].capacity,
-                distance_km: Number(ngos[0].distance_km)
-            }
+            ngos: ngos.map(function(ngo) {
+                return {
+                    ngo_id: ngo.ngo_id,
+                    ngo_name: ngo.ngo_name,
+                    address: ngo.address,
+                    capacity: ngo.capacity,
+                    distance_km: Number(ngo.distance_km)
+                };
+            })
         });
-
     } catch (error) {
         console.error("NGO matching error:", error);
 
         return res.status(500).json({
             success: false,
-            error: "Unable to find a matching NGO."
+            error: "Unable to find matching NGOs."
         });
     }
 });
 
-
-// ========================================
 // GET EXISTING ORDER DETAILS
-// ========================================
+app.get("/api/orders/:orderId", async function(req, res) {
+    try {
+        const orderId = req.params.orderId;
 
-app.get(
-    "/api/orders/:orderId",
-    async function(req, res) {
+        console.log("Searching for order:", orderId);
 
-        try {
+        const [rows] = await db.query(
+            `SELECT
+                o.order_id,
+                o.order_status,
+                f.food_name,
+                f.quantity,
+                f.unit,
+                r.restaurant_name,
+                n.ngo_name,
+                dp.driver_id,
+                dp.vehicle_number
+             FROM Orders o
+             JOIN FoodRequests fr
+                ON o.request_id = fr.request_id
+             JOIN FoodDonations f
+                ON fr.food_id = f.food_id
+             JOIN Restaurants r
+                ON o.restaurant_id = r.restaurant_id
+             JOIN NGOs n
+                ON o.ngo_id = n.ngo_id
+             LEFT JOIN DeliveryPartners dp
+                ON o.driver_id = dp.driver_id
+             WHERE o.order_id = ?`,
+            [orderId]
+        );
 
-            const orderId =
-                req.params.orderId;
-
-
-            console.log(
-                "Searching for order:",
-                orderId
-            );
-
-
-            const [rows] =
-                await db.query(
-
-                    `
-
-                    SELECT
-
-                        o.order_id,
-
-                        o.order_status,
-
-                        f.food_name,
-
-                        f.quantity,
-
-                        f.unit,
-
-                        r.restaurant_name,
-
-                        n.ngo_name,
-
-                        dp.driver_id,
-
-                        dp.vehicle_number
-
-
-                    FROM Orders o
-
-
-                    JOIN FoodRequests fr
-
-                        ON o.request_id =
-                           fr.request_id
-
-
-                    JOIN FoodDonations f
-
-                        ON fr.food_id =
-                           f.food_id
-
-
-                    JOIN Restaurants r
-
-                        ON o.restaurant_id =
-                           r.restaurant_id
-
-
-                    JOIN NGOs n
-
-                        ON o.ngo_id =
-                           n.ngo_id
-
-
-                    LEFT JOIN DeliveryPartners dp
-
-                        ON o.driver_id =
-                           dp.driver_id
-
-
-                    WHERE o.order_id = ?
-
-                    `,
-
-                    [orderId]
-
-                );
-
-
-            // --------------------------------
-            // ORDER NOT FOUND
-            // --------------------------------
-
-            if (rows.length === 0) {
-
-                return res.status(404).json({
-
-                    success: false,
-
-                    message:
-                        "Order not found"
-
-                });
-
-            }
-
-
-            // --------------------------------
-            // SEND ORDER
-            // --------------------------------
-
-            res.json({
-
-                success: true,
-
-                order: rows[0]
-
-            });
-
-
-        } catch (error) {
-
-
-            console.error(
-                "Database error:",
-                error
-            );
-
-
-            res.status(500).json({
-
+        if (rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-
-                message:
-                    "Database error"
-
+                message: "Order not found"
             });
-
         }
 
+        return res.json({
+            success: true,
+            order: rows[0]
+        });
+    } catch (error) {
+        console.error("Database error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Database error"
+        });
     }
-);
+}); 
 
+// EXISTING ORDER-BASED MATCHING ENDPOINT
+// This endpoint uses existing FoodRequests and Orders.
+// It does not create a new order.
+app.post("/api/matching", async function(req, res) {
+    try {
+        const { foodId } = req.body;
 
-// ========================================
-// MATCHING PRINCIPLE
-// ========================================
-//
-// Input:
-//     foodId
-//
-// Output:
-//     Best NGO
-//     Existing order_id
-//     Delivery URL
-//     Tracking URL
-//
-// NO ORDER IS CREATED HERE.
-// ========================================
+        if (!foodId) {
+            return res.status(400).json({
+                success: false,
+                message: "foodId is required"
+            });
+        }
 
-app.post(
-    "/api/matching",
-    async function(req, res) {
+        console.log("Running matching for food:", foodId);
 
-        try {
-
-
-            // --------------------------------
-            // GET FOOD ID
-            // --------------------------------
-
-            const {
-                foodId
-            } = req.body;
-
-
-            if (!foodId) {
-
-                return res.status(400).json({
-
-                    success: false,
-
-                    message:
-                        "foodId is required"
-
-                });
-
-            }
-
-
-            console.log(
-                "Running matching for food:",
-                foodId
-            );
-
-
-            // --------------------------------
-            // MATCHING QUERY
-            // --------------------------------
-
-            const [rows] =
-                await db.query(
-
-                    `
-
-                    SELECT
-
-                        n.ngo_id,
-
-                        n.ngo_name,
-
-                        o.order_id,
-
-
-                        (
-
-                            LEAST(
-                                f.quantity /
-                                n.capacity,
-                                1
-                            ) * 40
-
-
-                            +
-
-
+        const [rows] = await db.query(
+            `SELECT
+                n.ngo_id,
+                n.ngo_name,
+                o.order_id,
+                (
+                    LEAST(f.quantity / n.capacity, 1) * 40
+                    +
+                    (
+                        1 / (
+                            1 +
                             (
-
-                                1 /
-
-                                (
-
-                                    1 +
-
-                                    (
-
-                                        6371 * ACOS(
-
-                                            COS(
-                                                RADIANS(
-                                                    f.latitude
-                                                )
-                                            )
-
-                                            *
-
-                                            COS(
-                                                RADIANS(
-                                                    n.latitude
-                                                )
-                                            )
-
-                                            *
-
-                                            COS(
-
-                                                RADIANS(
-                                                    n.longitude
-                                                )
-
-                                                -
-
-                                                RADIANS(
-                                                    f.longitude
-                                                )
-
-                                            )
-
-                                            +
-
-                                            SIN(
-                                                RADIANS(
-                                                    f.latitude
-                                                )
-                                            )
-
-                                            *
-
-                                            SIN(
-                                                RADIANS(
-                                                    n.latitude
-                                                )
-                                            )
-
-                                        )
-
-                                    )
-
+                                6371 * ACOS(
+                                    COS(RADIANS(f.latitude)) *
+                                    COS(RADIANS(n.latitude)) *
+                                    COS(
+                                        RADIANS(n.longitude) -
+                                        RADIANS(f.longitude)
+                                    ) +
+                                    SIN(RADIANS(f.latitude)) *
+                                    SIN(RADIANS(n.latitude))
                                 )
-
-                            ) * 60
-
-
-                        ) AS MatchingScore
-
-
-                    FROM FoodDonations f
-
-
-                    JOIN NGOs n
-
-                        ON n.capacity > 0
-
-
-                    JOIN FoodRequests fr
-
-                        ON fr.food_id =
-                           f.food_id
-
-                        AND fr.ngo_id =
-                            n.ngo_id
-
-
-                    JOIN Orders o
-
-                        ON o.request_id =
-                           fr.request_id
-
-                        AND o.ngo_id =
-                            n.ngo_id
-
-
-                    WHERE f.food_id = ?
-
-                        AND f.status =
-                            'Available'
-
-                        AND n.verification_status =
-                            'Verified'
-
-                        AND fr.status =
-                            'Pending'
-
-
-                    ORDER BY
-                        MatchingScore DESC
-
-
-                    LIMIT 1
-
-                    `,
-
-                    [foodId]
-
-                );
-
-
-            // --------------------------------
-            // NO MATCH FOUND
-            // --------------------------------
-
-            if (rows.length === 0) {
-
-                return res.status(404).json({
-
-                    success: false,
-
-                    message:
-                        "No matching order found"
-
-                });
-
-            }
-
-
-            // --------------------------------
-            // GET MATCHED ORDER
-            // --------------------------------
-
-            const matchedOrder =
-                rows[0];
-
-
-            const orderId =
-                matchedOrder.order_id;
-
-
-            // --------------------------------
-            // GENERATE BASE URL
-            // --------------------------------
-
-            const baseUrl =
-                `${req.protocol}://${req.get("host")}`;
-
-
-            // --------------------------------
-            // GENERATE DELIVERY URL
-            // --------------------------------
-
-            const deliveryUrl =
-                `${baseUrl}/delivery/${orderId}`;
-
-
-            // --------------------------------
-            // GENERATE TRACKING URL
-            // --------------------------------
-
-            const trackingUrl =
-                `${baseUrl}/track/${orderId}`;
-
-
-            // --------------------------------
-            // SEND RESULT
-            // --------------------------------
-
-            res.json({
-
-                success: true,
-
-                ngoId:
-                    matchedOrder.ngo_id,
-
-                ngoName:
-                    matchedOrder.ngo_name,
-
-                orderId:
-                    orderId,
-
-                matchingScore:
-                    matchedOrder.MatchingScore,
-
-                deliveryUrl:
-                    deliveryUrl,
-
-                trackingUrl:
-                    trackingUrl
-
-            });
-
-
-        } catch (error) {
-
-
-            console.error(
-                "Matching error:",
-                error
-            );
-
-
-            res.status(500).json({
-
+                            )
+                        )
+                    ) * 60
+                ) AS MatchingScore
+             FROM FoodDonations f
+             JOIN NGOs n ON n.capacity > 0
+             JOIN FoodRequests fr
+                ON fr.food_id = f.food_id
+                AND fr.ngo_id = n.ngo_id
+             JOIN Orders o
+                ON o.request_id = fr.request_id
+                AND o.ngo_id = n.ngo_id
+             WHERE f.food_id = ?
+               AND f.status = 'Available'
+               AND n.verification_status = 'Verified'
+               AND fr.status = 'Pending'
+             ORDER BY MatchingScore DESC
+             LIMIT 1`,
+            [foodId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-
-                message:
-                    "Matching failed"
-
+                message: "No matching order found"
             });
-
         }
 
+        const matchedOrder = rows[0];
+        const orderId = matchedOrder.order_id;
+        const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+        return res.json({
+            success: true,
+            ngoId: matchedOrder.ngo_id,
+            ngoName: matchedOrder.ngo_name,
+            orderId: orderId,
+            matchingScore: matchedOrder.MatchingScore,
+            deliveryUrl: `${baseUrl}/delivery/${orderId}`,
+            trackingUrl: `${baseUrl}/track/${orderId}`
+        });
+    } catch (error) {
+        console.error("Matching error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Matching failed"
+        });
     }
-);
+});
 
-
-// ========================================
-// START SERVER
-// ========================================
-
-const PORT =
-    process.env.PORT || 3000;
-
+// DATABASE TEST ROUTE
 app.get("/test-matching", async function(req, res) {
     try {
         const [rows] = await db.query("SELECT 1 AS test");
@@ -978,7 +445,6 @@ app.get("/test-matching", async function(req, res) {
             <h2>Database connection works!</h2>
             <p>Test result: ${rows[0].test}</p>
         `);
-
     } catch (error) {
         console.error("DATABASE TEST ERROR:", error);
 
@@ -991,15 +457,9 @@ app.get("/test-matching", async function(req, res) {
     }
 });
 
+// START SERVER — keep this at the bottom
+const PORT = process.env.PORT || 3000;
 
-server.listen(
-    PORT,
-    "0.0.0.0",
-    function() {
-
-        console.log(
-            `Server running on the port ${PORT}`
-        );
-
-    }
-);
+server.listen(PORT, "0.0.0.0", function() {
+    console.log(`Server running on the port ${PORT}`);
+});
