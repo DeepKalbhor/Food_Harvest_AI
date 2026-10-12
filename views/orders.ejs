@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Orders</title>
+</head>
+<body>
+    <h2>Update Order Status</h2>
+
+    <input id="orderId" placeholder="Enter Order ID">
+
+    <select id="status">
+        <option>Created</option>
+        <option>Accepted</option>
+        <option>Driver Assigned</option>
+        <option>Picked Up</option>
+        <option>In Transit</option>
+        <option>Delivered</option>
+        <option>Cancelled</option>
+    </select>
+
+    <button onclick="updateStatus()">Update</button>
+
+    <p id="message"></p>
+
+    <script>
+        async function updateStatus() {
+            const response = await fetch("/api/update-status", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    orderId: document.getElementById("orderId").value.trim(),
+                    status: document.getElementById("status").value
+                })
+            });
+
+            const result = await response.json();
+            document.getElementById("message").textContent =
+                result.message || "Something went wrong.";
+        }
+    </script>
+</body>
+</html>
