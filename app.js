@@ -457,6 +457,134 @@ app.get("/test-matching", async function(req, res) {
     }
 });
 
+app.post("/api/create-order", async function(req, res) {
+    let connection;
+
+    try {
+        const foodId = Number(req.body.foodId);
+        const ngoId = Number(req.body.ngoId);
+
+        if (
+            !Number.isInteger(foodId) || foodId <= 0 ||
+            !Number.isInteger(ngoId) || ngoId <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid foodId and ngoId are required."
+            });
+        }
+
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // Lock the donation so it cannot be ordered twice concurrently.
+        const [foods] = await connection.query(
+            `SELECT food_id, restaurant_id, status
+             FROM FoodDonations
+             WHERE food_id = ?
+             FOR UPDATE`,
+            [foodId]
+        );
+
+        if (
+            foods.length === 0 ||
+            foods[0].status !== "Available"
+        ) {
+            await connection.rollback();
+
+            return res.status(409).json({
+                success: false,
+                message: "This donation is unavailable or already matched."
+            });
+        }
+
+        const food = foods[0];
+
+        // Confirm that the selected NGO is eligible.
+        const [ngos] = await connection.query(
+            `SELECT ngo_id
+             FROM NGOs
+             WHERE ngo_id = ?
+               AND verification_status = 'Verified'
+               AND capacity > 0`,
+            [ngoId]
+        );
+
+        if (ngos.length === 0) {
+            await connection.rollback();
+
+            return res.status(400).json({
+                success: false,
+                message: "The selected NGO is not eligible."
+            });
+        }
+
+        // Create a request for the selected NGO.
+        const [requestResult] = await connection.query(
+            `INSERT INTO FoodRequests (food_id, ngo_id, status)
+             VALUES (?, ?, 'Pending')`,
+            [foodId, ngoId]
+        );
+
+        const requestId = requestResult.insertId;
+
+        // Generate a unique order reference.
+        const orderId =
+            "FHA-" + Date.now() + "-" +
+            Math.floor(Math.random() * 1000);
+
+        // Create the order.
+        await connection.query(
+            `INSERT INTO Orders
+                (order_id, request_id, restaurant_id, ngo_id, order_status)
+             VALUES (?, ?, ?, ?, 'Created')`,
+            [orderId, requestId, food.restaurant_id, ngoId]
+        );
+
+        // Mark the donation as matched.
+        await connection.query(
+            `UPDATE FoodDonations
+             SET status = 'Matched'
+             WHERE food_id = ?`,
+            [foodId]
+        );
+
+        // Create a delivery record for future tracking.
+        await connection.query(
+            `INSERT INTO Deliveries (order_id, status)
+             VALUES (?, 'Assigned')`,
+            [orderId]
+        );
+
+        await connection.commit();
+
+        return res.status(201).json({
+            success: true,
+            message: "Donation matched and order created successfully.",
+            orderId: orderId,
+            trackingUrl: "/track/" + encodeURIComponent(orderId),
+            deliveryUrl: "/delivery/" + encodeURIComponent(orderId)
+        });
+
+    } catch (error) {
+        if (connection) {
+            await connection.rollback();
+        }
+
+        console.error("Create order error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to create the order."
+        });
+
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+});
+
 // START SERVER — keep this at the bottom
 const PORT = process.env.PORT || 3000;
 
