@@ -4,187 +4,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NGO Matching | Food Harvest AI</title>
+
+    <title>Food Harvest AI</title>
+
     <link rel="stylesheet" href="/css/style.css">
 
     <style>
-        .ngo-list {
-            max-width: 750px;
-            margin: 30px auto;
-            display: grid;
-            gap: 16px;
-            text-align: left;
+        * {
+            box-sizing: border-box;
         }
 
-        .ngo-card {
-            padding: 22px;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            background: #fff;
-            color: #222;
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f7f9f7;
+            color: #243329;
         }
 
-        .ngo-card h2 {
-            margin: 0 0 10px;
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 7%;
+            background: white;
+            border-bottom: 1px solid #e5ebe5;
+        }
+
+        .logo {
             font-size: 21px;
+            font-weight: bold;
         }
 
-        .ngo-card p {
-            margin: 7px 0;
+        .logo span {
+            color: #29965b;
         }
 
-        .ngo-distance {
-            color: #198754;
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #35473a;
+            text-decoration: none;
+            font-size: 14px;
             font-weight: 600;
         }
 
-        .match-number {
-            display: inline-block;
-            margin-bottom: 10px;
-            padding: 5px 9px;
-            background: #eef7f0;
-            border-radius: 6px;
-            font-size: 12px;
+        .nav-links a:hover {
+            color: #29965b;
         }
 
-        .ngo-note {
-            color: #666;
+        .hero {
+            max-width: 1100px;
+            margin: auto;
+            padding: 75px 24px 45px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: #e5f6e9;
+            color: #237a45;
             font-size: 13px;
+            font-weight: bold;
+        }
+
+        h1 {
+            margin: 22px 0 15px;
+            font-size: clamp(34px, 5vw, 54px);
+            line-height: 1.15;
+        }
+
+        h1 span {
+            color: #29965b;
+        }
+
+        .hero-description {
+            max-width: 620px;
+            margin: 0 auto;
+            color: #66736a;
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 13px 22px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: #29965b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #207a48;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #29965b;
+            border: 1px solid #cfe5d5;
+        }
+
+        .btn-secondary:hover {
+            background: #edf8f0;
+        }
+
+        .section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 25px 24px 65px;
+        }
+
+        .section-heading {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .section-heading h2 {
+            margin-bottom: 8px;
+            font-size: 27px;
+        }
+
+        .section-heading p {
+            color: #718076;
+            font-size: 14px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            background: white;
+            border: 1px solid #e5ebe5;
+            border-radius: 13px;
+            box-shadow: 0 4px 15px rgba(30, 60, 40, 0.04);
+        }
+
+        .card-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 17px;
+            border-radius: 10px;
+            background: #e9f7ed;
+            font-size: 24px;
+        }
+
+        .card h3 {
+            margin: 0 0 10px;
+            font-size: 19px;
+        }
+
+        .card p {
+            flex-grow: 1;
+            margin: 0 0 22px;
+            color: #6b786e;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .card .btn {
+            text-align: center;
+        }
+
+        footer {
+            padding: 22px;
+            text-align: center;
+            background: white;
+            border-top: 1px solid #e5ebe5;
+            color: #78847b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 750px) {
+            .navbar {
+                align-items: flex-start;
+                gap: 16px;
+                flex-direction: column;
+                padding: 18px 5%;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
+
+            .hero {
+                padding-top: 50px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
 
-<nav class="navbar">
-    <div class="logo">🍱 Food Harvest <span>AI</span></div>
-    <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/donate">Donate Again</a>
-    </div>
-</nav>
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+        <div class="logo">
+            🍱 Food Harvest <span>AI</span>
+        </div>
 
-<main class="hero">
-    <section class="hero-content">
-        <div class="badge">Food Redistribution</div>
-        <h1>Find Your <span>NGO Match.</span></h1>
-        <p class="hero-description">
-            Compare verified NGOs near your pickup location.
-        </p>
-    </section>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/donate">Donate Food</a>
+            <a href="/matching">NGO Matching</a>
+            <a href="/orders">Manage Orders</a>
+        </div>
+    </nav>
 
-    <section class="stat-card"
-             style="max-width:750px;margin:25px auto;padding:25px">
+    <!-- HERO SECTION -->
+    <main>
+        <section class="hero">
+            <div class="badge">AI-Powered Food Redistribution</div>
 
-        <h2>Your Donation</h2>
-        <p id="foodDetails">Loading donation details...</p>
-        <p id="statusMessage" role="status">
-            Searching for verified NGOs...
-        </p>
-    </section>
+            <h1>
+                Reduce Food Waste.<br>
+                <span>Share More Meals.</span>
+            </h1>
 
-    <section id="ngoList" class="ngo-list"></section>
+            <p class="hero-description">
+                Food Harvest AI connects surplus food donors with NGOs
+                to help redistribute food efficiently and reduce waste.
+            </p>
 
-    <p class="ngo-note" style="text-align:center">
-        NGOs are ranked by distance. Listed capacity does not guarantee
-        acceptance; please confirm availability with the NGO.
-    </p>
+            <div class="actions">
+                <a href="/donate" class="btn btn-primary">
+                    Donate Surplus Food
+                </a>
 
-    <div style="text-align:center;margin:30px">
-        <a href="/donate" class="btn btn-primary"
-           style="text-decoration:none">
-            Donate More Food
-        </a>
+                <a href="/orders" class="btn btn-secondary">
+                    Manage Orders
+                </a>
+            </div>
+        </section>
 
-        <a href="/delivery/demo" class="track-btn"
-           style="display:inline-block;margin:8px;text-decoration:none">
-            📍 Open Demo Tracking
-        </a>
-    </div>
-</main>
+        <!-- MAIN FEATURES -->
+        <section class="section">
+            <div class="section-heading">
+                <h2>Manage Your Workflow</h2>
+                <p>Access the main features of Food Harvest AI.</p>
+            </div>
 
-<script>
-async function loadNGOMatches() {
-    const status = document.getElementById("statusMessage");
-    const list = document.getElementById("ngoList");
-    const foodDetails = document.getElementById("foodDetails");
-    const foodId = sessionStorage.getItem("foodId");
+            <div class="cards">
 
-    if (!foodId) {
-        status.textContent =
-            "No saved donation found. Please submit the donation form first.";
-        return;
-    }
+                <!-- DONATE FOOD -->
+                <article class="card">
+                    <div class="card-icon">🍱</div>
 
-    try {
-        const response = await fetch(
-            "/api/matching-ngo?foodId=" + encodeURIComponent(foodId),
-            { headers: { "Accept": "application/json" } }
-        );
+                    <h3>Donate Food</h3>
 
-        const text = await response.text();
-        let result;
+                    <p>
+                        Register surplus food, enter its quantity and
+                        provide the pickup location to begin redistribution.
+                    </p>
 
-        try {
-            result = JSON.parse(text);
-        } catch {
-            throw new Error("Invalid server response. Check Render logs.");
-        }
+                    <a href="/donate" class="btn btn-primary">
+                        Donate Food
+                    </a>
+                </article>
 
-        if (!response.ok || !result.success) {
-            throw new Error(result.error || "Unable to find NGOs.");
-        }
+                <!-- NGO MATCHING -->
+                <article class="card">
+                    <div class="card-icon">🤝</div>
 
-        foodDetails.textContent =
-            result.food.food_name + " — " +
-            result.food.quantity + " " + result.food.unit;
+                    <h3>NGO Matching</h3>
 
-        list.replaceChildren();
+                    <p>
+                        View suitable NGOs for a food donation and create
+                        an order with your selected NGO.
+                    </p>
 
-        if (!result.ngos || result.ngos.length === 0) {
-            status.textContent =
-                "No verified NGOs with available capacity were found.";
-            return;
-        }
+                    <a href="/matching" class="btn btn-secondary">
+                        Find NGOs
+                    </a>
+                </article>
 
-        status.textContent =
-            result.ngos.length + " verified NGO(s) found, ranked by distance.";
+                <!-- ORDER MANAGEMENT -->
+                <article class="card">
+                    <div class="card-icon">📦</div>
 
-        result.ngos.forEach(function(ngo, index) {
-            const card = document.createElement("article");
-            card.className = "ngo-card";
+                    <h3>Manage Orders</h3>
 
-            const rank = document.createElement("span");
-            rank.className = "match-number";
-            rank.textContent = index === 0
-                ? "Nearest match"
-                : "Match #" + (index + 1);
+                    <p>
+                        Enter an existing order ID, update its status
+                        and check the latest order progress.
+                    </p>
 
-            const name = document.createElement("h2");
-            name.textContent = ngo.ngo_name;
+                    <a href="/orders" class="btn btn-primary">
+                        Open Orders
+                    </a>
+                </article>
 
-            const address = document.createElement("p");
-            address.textContent = ngo.address || "Address not available";
+            </div>
+        </section>
+    </main>
 
-            const distance = document.createElement("p");
-            distance.className = "ngo-distance";
-            distance.textContent =
-                Number(ngo.distance_km).toFixed(1) + " km away";
-
-            const capacity = document.createElement("p");
-            capacity.textContent = "Listed capacity: " + ngo.capacity;
-
-            card.append(rank, name, address, distance, capacity);
-            list.appendChild(card);
-        });
-
-    } catch (error) {
-        console.error("NGO matching failed:", error);
-        status.textContent = error.message;
-    }
-}
-
-loadNGOMatches();
-</script>
+    <!-- FOOTER -->
+    <footer>
+        Food Harvest AI &copy; 2026 |
+        Reducing food waste, one meal at a time.
+    </footer>
 
 </body>
 </html>
