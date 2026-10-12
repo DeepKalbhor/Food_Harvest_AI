@@ -585,6 +585,38 @@ app.post("/api/create-order", async function(req, res) {
     }
 });
 
+
+app.post("/api/update-status", async (req, res) => {
+    try {
+        const { orderId, status } = req.body;
+
+        const allowed = [
+            "Created", "Accepted", "Driver Assigned",
+            "Picked Up", "In Transit", "Delivered", "Cancelled"
+        ];
+
+        if (!allowed.includes(status)) {
+            return res.status(400).json({ message: "Invalid status" });
+        }
+
+        await db.query(
+            "UPDATE Orders SET order_status = ? WHERE order_id = ?",
+            [status, orderId]
+        );
+
+        res.json({ success: true, message: "Status updated!" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Update failed" });
+    }
+});
+
+app.get("/orders", (req, res) => {
+    res.render("orders");
+});
+
+
 // START SERVER — keep this at the bottom
 const PORT = process.env.PORT || 3000;
 
