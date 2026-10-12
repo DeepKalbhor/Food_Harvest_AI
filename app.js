@@ -409,7 +409,105 @@ const [restaurants] = await db.query(
         });
     }
 });
+// ========================================
+// FIND NEAREST VERIFIED NGO FOR A DONATION
+// ========================================
 
+app.get("/api/matching-ngo", async function(req, res) {
+    try {
+        const foodId = Number(req.query.foodId);
+
+        if (!Number.isInteger(foodId) || foodId <= 0) {
+            return res.status(400).json({
+                success: false,
+                error: "A valid foodId is required."
+            });
+        }
+
+        // Retrieve the saved donation
+        const [foods] = await db.query(
+            "SELECT food_id, food_name, quantity, unit, latitude, longitude " +
+            "FROM FoodDonations " +
+            "WHERE food_id = ? AND status = 'Available'",
+            [foodId]
+        );
+
+        if (foods.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "Donation not found or no longer available."
+            });
+        }
+
+        const food = foods[0];
+
+        // Find the nearest verified NGO with positive capacity
+        const [ngos] = await db.query(
+            `SELECT
+                ngo_id,
+                ngo_name,
+                address,
+                capacity,
+                latitude,
+                longitude,
+                (
+                    6371 * ACOS(
+                        LEAST(1, GREATEST(-1,
+                            COS(RADIANS(?)) *
+                            COS(RADIANS(latitude)) *
+                            COS(RADIANS(longitude) - RADIANS(?)) +
+                            SIN(RADIANS(?)) *
+                            SIN(RADIANS(latitude))
+                        ))
+                    )
+                ) AS distance_km
+             FROM NGOs
+             WHERE verification_status = 'Verified'
+               AND capacity > 0
+               AND latitude IS NOT NULL
+               AND longitude IS NOT NULL
+             ORDER BY distance_km ASC
+             LIMIT 1`,
+            [
+                food.latitude,
+                food.longitude,
+                food.latitude
+            ]
+        );
+
+        if (ngos.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "No verified NGO with available capacity was found."
+            });
+        }
+
+        return res.json({
+            success: true,
+            food: {
+                food_id: food.food_id,
+                food_name: food.food_name,
+                quantity: food.quantity,
+                unit: food.unit
+            },
+            ngo: {
+                ngo_id: ngos[0].ngo_id,
+                ngo_name: ngos[0].ngo_name,
+                address: ngos[0].address,
+                capacity: ngos[0].capacity,
+                distance_km: Number(ngos[0].distance_km)
+            }
+        });
+
+    } catch (error) {
+        console.error("NGO matching error:", error);
+
+        return res.status(500).json({
+            success: false,
+            error: "Unable to find a matching NGO."
+        });
+    }
+});
 
 
 // ========================================
