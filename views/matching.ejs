@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,65 +10,129 @@
 
 <nav class="navbar">
     <div class="logo">🍱 Food Harvest <span>AI</span></div>
-    <div class="nav-links"><a href="/">Home</a></div>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/donate">Donate Again</a>
+    </div>
 </nav>
 
 <main class="hero">
     <section class="hero-content">
-        <div class="badge">NGO Matching</div>
-        <h1>Your Food, <span>Matched.</span></h1>
+        <div class="badge">Food Redistribution</div>
+        <h1>Finding Your <span>NGO Match.</span></h1>
         <p class="hero-description">
-            Review the donation details and suggested NGO.
+            We are checking verified NGOs near your pickup location.
         </p>
     </section>
 
-    <section class="stat-card" style="max-width:550px;margin:35px auto;text-align:left">
-        <h2 id="foodDisplay">Your donation</h2>
-        <p id="locationDisplay" style="margin:12px 0;color:#68776e"></p>
+    <section class="stat-card"
+             style="max-width:550px;margin:35px auto;text-align:left;padding:28px">
 
-        <hr style="border:0;border-top:1px solid #e3ebe5;margin:20px 0">
-
-        <div class="badge">Suggested NGO · Demo result</div>
-        <h2>🤝 Helping Hands Ahmedabad</h2>
-        <p style="margin-top:12px;color:#68776e;line-height:1.7">
-            Suggested match for your donation. A real matching result
-            requires checking NGO location, capacity and food requirements.
+        <p id="statusMessage" role="status">
+            Searching for the nearest verified NGO...
         </p>
 
-        <div class="buttons" style="flex-wrap:wrap">
-          <a href="/delivery/demo" class="track-btn">
-    📍 Start Live Tracking
-</a>
-            <a href="/donate" class="btn btn-secondary">Back</a>
+        <div id="matchDetails" hidden>
+            <hr style="margin:20px 0">
+
+            <h2 id="foodTitle"></h2>
+            <p id="foodQuantity"></p>
+
+            <hr style="margin:20px 0">
+
+            <p style="color:#198754;font-weight:600">
+                Recommended NGO
+            </p>
+
+            <h2 id="ngoName"></h2>
+            <p id="ngoAddress"></p>
+            <p id="ngoDistance"></p>
+            <p id="ngoCapacity"></p>
+
+            <p style="font-size:13px;color:#666">
+                Recommendation based on distance and NGO verification.
+                Availability should be confirmed with the NGO.
+            </p>
+        </div>
+
+        <div style="margin-top:25px">
+            <a href="/donate" class="btn btn-primary"
+               style="display:inline-block;text-decoration:none">
+                Donate More Food
+            </a>
+
+            <a href="/delivery/demo" class="track-btn"
+               style="display:inline-block;margin:8px;text-decoration:none">
+                📍 Open Demo Tracking
+            </a>
         </div>
     </section>
 </main>
 
 <script>
-const food = sessionStorage.getItem("foodName");
-const quantity = sessionStorage.getItem("quantity");
-const unit = sessionStorage.getItem("unit");
-const location = sessionStorage.getItem("pickupLocation");
+async function findNGOMatch() {
+    const statusMessage = document.getElementById("statusMessage");
+    const matchDetails = document.getElementById("matchDetails");
 
-if (!food || !quantity || !unit || !location) {
-    document.getElementById("foodDisplay").textContent =
-        "No donation details found";
+    const foodId = sessionStorage.getItem("foodId");
 
-    document.getElementById("locationDisplay").textContent =
-        "Please return to the donation form and enter your details.";
+    if (!foodId) {
+        statusMessage.textContent =
+            "No saved donation was found. Please submit the donation form first.";
+        return;
+    }
 
-    document.getElementById("trackButton").disabled = true;
-} else {
-    document.getElementById("foodDisplay").textContent =
-        `${food} — ${quantity} ${unit}`;
+    try {
+        const response = await fetch(
+            "/api/matching-ngo?foodId=" + encodeURIComponent(foodId),
+            {
+                headers: { "Accept": "application/json" }
+            }
+        );
 
-    document.getElementById("locationDisplay").textContent =
-        `Pickup location: ${location}`;
+        const text = await response.text();
+        let result;
+
+        try {
+            result = JSON.parse(text);
+        } catch {
+            throw new Error("The server returned an invalid response.");
+        }
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.error || "No matching NGO was found."
+            );
+        }
+
+        document.getElementById("foodTitle").textContent =
+            result.food.food_name;
+
+        document.getElementById("foodQuantity").textContent =
+            "Quantity: " + result.food.quantity + " " + result.food.unit;
+
+        document.getElementById("ngoName").textContent =
+            result.ngo.ngo_name;
+
+        document.getElementById("ngoAddress").textContent =
+            result.ngo.address || "Address not available";
+
+        document.getElementById("ngoDistance").textContent =
+            "Distance: " + result.ngo.distance_km.toFixed(1) + " km";
+
+        document.getElementById("ngoCapacity").textContent =
+            "Listed capacity: " + result.ngo.capacity;
+
+        matchDetails.hidden = false;
+        statusMessage.textContent = "Your nearest verified NGO match is ready.";
+
+    } catch (error) {
+        console.error("NGO matching failed:", error);
+        statusMessage.textContent = error.message;
+    }
 }
 
-document.getElementById("trackButton").addEventListener("click", function() {
-    window.location.href = "/delivery/demo";
-});
+findNGOMatch();
 </script>
 
 </body>
