@@ -29,6 +29,16 @@
         <label for="foodName">Food name</label>
         <input id="foodName" required placeholder="e.g. Vegetable Biryani"
                style="width:100%;padding:12px;margin:8px 0 18px">
+        <label for="category">Food category</label>
+<select id="category" required
+        style="width:100%;padding:12px;margin:8px 0 18px">
+    <option value="Rice">Rice</option>
+    <option value="Curry">Curry</option>
+    <option value="Vegetarian">Vegetarian</option>
+    <option value="Gujarati">Gujarati</option>
+    <option value="South Indian">South Indian</option>
+    <option value="Other">Other</option>
+</select>
 
         <label for="quantity">Quantity</label>
         <input id="quantity" type="number" min="0.1" step="any"
@@ -54,28 +64,62 @@
     </form>
 </main>
 
+
 <script>
-document.getElementById("donationForm").addEventListener("submit", function(e) {
+document.getElementById("donationForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
+    const button = this.querySelector('button[type="submit"]');
     const food = document.getElementById("foodName").value.trim();
     const quantity = Number(document.getElementById("quantity").value);
     const unit = document.getElementById("unit").value;
     const location = document.getElementById("location").value.trim();
+    const category = document.getElementById("category").value;
 
     if (!food || !location || !Number.isFinite(quantity) || quantity <= 0) {
         alert("Please enter valid food details.");
         return;
     }
 
-    sessionStorage.setItem("foodName", food);
-    sessionStorage.setItem("quantity", String(quantity));
-    sessionStorage.setItem("unit", unit);
-    sessionStorage.setItem("pickupLocation", location);
+    button.disabled = true;
+    button.textContent = "Saving donation...";
 
-    window.location.href = "/matching";
+    try {
+        const response = await fetch("/api/donations", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                food_name: food,
+                category: category,
+                quantity: quantity,
+                unit: unit,
+                pickup_address: location
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Could not save donation.");
+        }
+
+        sessionStorage.setItem("foodName", food);
+        sessionStorage.setItem("quantity", String(quantity));
+        sessionStorage.setItem("unit", unit);
+        sessionStorage.setItem("pickupLocation", location);
+        sessionStorage.setItem("foodId", String(result.foodId));
+
+        window.location.href = "/matching";
+    } catch (error) {
+        alert(error.message || "Unable to save donation. Please try again.");
+        button.disabled = false;
+        button.textContent = "Find Nearby NGO";
+    }
 });
 </script>
+
 
 </body>
 </html>
