@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard & Reports</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f8f5;
+            color: #26352b;
+            padding: 25px;
+            margin: 0;
+        }
+        main { max-width: 1000px; margin: auto; }
+        nav { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 30px; }
+        a { color: #23834b; text-decoration: none; }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        .card {
+            background: white;
+            padding: 22px;
+            border: 1px solid #e0e8e0;
+            border-radius: 10px;
+        }
+        .number { font-size: 30px; font-weight: bold; margin-top: 12px; }
+        .muted { color: #68756b; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5eae5; }
+        button { padding: 10px 15px; cursor: pointer; }
+        .table-wrap { overflow-x: auto; }
+    </style>
+</head>
+
+<body>
+<main>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/donate">Donate Food</a>
+        <a href="/matching">NGO Matching</a>
+        <a href="/orders">Manage Orders</a>
+    </nav>
+
+    <h1>Dashboard & Reports</h1>
+    <p class="muted">Live overview of Food Harvest AI</p>
+
+    <div class="cards">
+        <div class="card">
+            Total Donations
+            <div class="number" id="donations">—</div>
+        </div>
+        <div class="card">
+            Available Donations
+            <div class="number" id="available">—</div>
+        </div>
+        <div class="card">
+            Total Orders
+            <div class="number" id="orders">—</div>
+        </div>
+        <div class="card">
+            Delivered Orders
+            <div class="number" id="delivered">—</div>
+        </div>
+        <div class="card">
+            Cancelled Orders
+            <div class="number" id="cancelled">—</div>
+        </div>
+    </div>
+
+    <h2>Recent Orders</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody id="recent">
+                <tr><td colspan="3">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p id="message" class="muted"></p>
+    <button onclick="loadDashboard()">Refresh</button>
+</main>
+
+<script>
+async function loadDashboard() {
+    const message = document.getElementById("message");
+
+    try {
+        const response = await fetch("/api/dashboard");
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Could not load data");
+        }
+
+        document.getElementById("donations").textContent =
+            data.donations.total ?? 0;
+
+        document.getElementById("available").textContent =
+            data.donations.available ?? 0;
+
+        document.getElementById("orders").textContent =
+            data.orders.total ?? 0;
+
+        document.getElementById("delivered").textContent =
+            data.orders.delivered ?? 0;
+
+        document.getElementById("cancelled").textContent =
+            data.orders.cancelled ?? 0;
+
+        const table = document.getElementById("recent");
+        table.replaceChildren();
+
+        if (data.recent.length === 0) {
+            const row = table.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 3;
+            cell.textContent = "No orders yet.";
+        } else {
+            data.recent.forEach(order => {
+                const row = table.insertRow();
+
+                [order.order_id, order.order_status,
+                 order.created_at
+                    ? new Date(order.created_at).toLocaleString()
+                    : "—"
+                ].forEach(value => {
+                    const cell = row.insertCell();
+                    cell.textContent = value ?? "—";
+                });
+            });
+        }
+
+        message.textContent = "Dashboard updated.";
+    } catch (error) {
+        message.textContent = error.message;
+    }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
