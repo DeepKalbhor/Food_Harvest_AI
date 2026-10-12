@@ -363,35 +363,33 @@ app.post("/api/donations", async function(req, res) {
             return date.toISOString().slice(0, 19).replace("T", " ");
         }
 
-        const [result] = await db.query(
-            `INSERT INTO FoodDonations
-            (
-                restaurant_id,
-                food_name,
-                category,
-                quantity,
-                unit,
-                prepared_time,
-                expiry_time,
-                pickup_address,
-                latitude,
-                longitude,
-                status
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Available')`,
-            [
-                restaurantId,
-                food_name.trim(),
-                category,
-                Number(quantity),
-                unit,
-                formatMySQLDate(preparedTime),
-                formatMySQLDate(expiryTime),
-                pickup_address.trim(),
-                restaurants[0].latitude,
-                restaurants[0].longitude
-            ]
-        );
+      const [result] = await db.query(
+    `INSERT INTO FoodDonations (
+        restaurant_id,
+        food_name,
+        category,
+        quantity,
+        unit,
+        prepared_time,
+        expiry_time,
+        pickup_address,
+        latitude,
+        longitude,
+        status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Available')`,
+    [
+        restaurantId,
+        food_name.trim(),
+        category.trim(),
+        Number(quantity),
+        unit.trim(),
+        formatMySQLDate(preparedTime),
+        formatMySQLDate(expiryTime),
+        pickup_address.trim(),
+        restaurants[0].latitude,
+        restaurants[0].longitude
+    ]
+);
 
         console.log("Donation saved. Food ID:", result.insertId);
 
