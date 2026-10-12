@@ -616,6 +616,39 @@ app.get("/orders", (req, res) => {
     res.render("orders");
 });
 
+app.get("/dashboard", (req, res) => {
+    res.render("dashboard");
+});
+
+app.get("/api/dashboard", async (req, res) => {
+    try {
+        const [[donations]] = await db.query(`
+            SELECT COUNT(*) AS total,
+                   SUM(status = 'Available') AS available
+            FROM FoodDonations
+        `);
+
+        const [[orders]] = await db.query(`
+            SELECT COUNT(*) AS total,
+                   SUM(order_status = 'Delivered') AS delivered,
+                   SUM(order_status = 'Cancelled') AS cancelled
+            FROM Orders
+        `);
+
+        const [recent] = await db.query(`
+            SELECT order_id, order_status, created_at
+            FROM Orders
+            ORDER BY created_at DESC
+            LIMIT 10
+        `);
+
+        res.json({ donations, orders, recent });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Dashboard loading failed" });
+    }
+});
+
 
 // START SERVER — keep this at the bottom
 const PORT = process.env.PORT || 3000;
