@@ -1,157 +1,132 @@
+
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Partner | Food Harvest AI</title>
 
-    <title>Delivery Partner</title>
-
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    >
-
-    <style>
-
-        body {
-            margin: 0;
-            font-family: Arial;
-        }
-
-        h2 {
-            text-align: center;
-        }
-
-        #map {
-            height: 80vh;
-        }
-
-    </style>
-
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
-
-
 <body>
+<div class="tracking-page">
+    <header class="tracking-header">
+        <div class="tracking-title">
+            <h2>🚚 Delivery Partner</h2>
+            <p>Tracking room: <%= orderId %></p>
+        </div>
+        <div class="status">
+            <span id="statusDot" class="status-dot"></span>
+            <span id="statusText">Connecting...</span>
+        </div>
+    </header>
 
-    <h2>
-        Delivery Partner
-    </h2>
+    <div class="map-wrapper">
+        <div id="map"></div>
 
-    <p style="text-align:center">
-        Order ID: <%= orderId %>
-    </p>
+        <div class="map-card">
+            <h3>📡 Your Live Location</h3>
+            <div class="map-info"><span>GPS</span><span id="gpsStatus">Waiting...</span></div>
+            <div class="map-info"><span>Latitude</span><span id="latitude">--</span></div>
+            <div class="map-info"><span>Longitude</span><span id="longitude">--</span></div>
+        </div>
+    </div>
+</div>
 
-    <div id="map"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<script>
+const socket = io();
+const roomId = <%- JSON.stringify(String(orderId)) %>;
 
-    <script src="/socket.io/socket.io.js"></script>
+const map = L.map("map").setView([23.157272, 72.670295], 13);
 
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-    </script>
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap contributors"
+}).addTo(map);
 
+const truckIcon = L.divIcon({
+    className: "",
+    html: '<div class="delivery-marker">🚚</div>',
+    iconSize: [42, 42],
+    iconAnchor: [21, 21]
+});
 
-    <script>
+let marker = null;
 
-        const socket = io();
+socket.on("connect", () => {
+    document.getElementById("statusDot").classList.add("connected");
+    document.getElementById("statusText").textContent = "Connected";
 
-        const orderId = "<%= orderId %>";
+    socket.emit("join-order", {
+        orderId: roomId,
+        role: "delivery"
+    });
 
-        const role = "delivery";
+    console.log("Delivery joined room:", roomId);
+});
 
+socket.on("disconnect", () => {
+    document.getElementById("statusDot").classList.remove("connected");
+    document.getElementById("statusText").textContent = "Disconnected";
+});
 
-        console.log(
-            "Delivery:",
-            orderId
-        );
+function showLocation(latitude, longitude) {
+    const point = [latitude, longitude];
 
+    if (!marker) {
+        marker = L.marker(point, { icon: truckIcon })
+            .addTo(map)
+            .bindPopup("🚚 Delivery Partner");
+        marker.openPopup();
+    } else {
+        marker.setLatLng(point);
+    }
 
-        // Join order
-        socket.emit(
-            "join-order",
-            {
-                orderId: orderId,
-                role: role
-            }
-        );
+    map.setView(point, 16);
 
+    document.getElementById("latitude").textContent = latitude.toFixed(6);
+    document.getElementById("longitude").textContent = longitude.toFixed(6);
+    document.getElementById("gpsStatus").textContent = "Active";
 
-        // Create map
-        const map = L.map("map")
-            .setView([0, 0], 10);
+    console.log("GPS location:", latitude, longitude);
+}
 
+function gpsError(error) {
+    console.error("GPS error:", error.code, error.message);
+    document.getElementById("gpsStatus").textContent = error.message;
+}
 
-        L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            {
-                attribution:
-                    "© OpenStreetMap contributors"
-            }
-        ).addTo(map);
+if ("geolocation" in navigator) {
+    navigator.geolocation.watchPosition(
+        position => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
+            showLocation(latitude, longitude);
 
-        // Get delivery partner location
-        if (navigator.geolocation) {
-
-            navigator.geolocation.watchPosition(
-
-                function(position) {
-
-                    const latitude =
-                        position.coords.latitude;
-
-                    const longitude =
-                        position.coords.longitude;
-
-
-                    console.log(
-                        "Sending:",
-                        latitude,
-                        longitude
-                    );
-
-
-                    socket.emit(
-                        "send-location",
-                        {
-                            latitude: latitude,
-                            longitude: longitude
-                        }
-                    );
-
-
-                    // Show delivery partner's
-                    // own location
-                    map.setView(
-                        [latitude, longitude],
-                        16
-                    );
-
-                },
-
-
-                function(error) {
-
-                    console.error(
-                        "Location error:",
-                        error
-                    );
-
-                },
-
-
-                {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                }
-
-            );
-
+            socket.emit("send-location", {
+                latitude,
+                longitude
+            });
+        },
+        gpsError,
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 3000
         }
+    );
+} else {
+    document.getElementById("gpsStatus").textContent = "GPS unsupported";
+}
 
-    </script>
-
+window.addEventListener("load", () => {
+    setTimeout(() => map.invalidateSize(true), 300);
+});
+</script>
 </body>
-
 </html>
