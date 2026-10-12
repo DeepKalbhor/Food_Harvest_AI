@@ -304,6 +304,113 @@ app.get(
 
     }
 );
+```js
+// ========================================
+// SAVE FOOD DONATION TO MYSQL
+// ========================================
+
+app.post("/api/donations", async function(req, res) {
+    try {
+        const {
+            food_name,
+            category,
+            quantity,
+            unit,
+            pickup_address
+        } = req.body;
+
+        // Validate form data
+        if (
+            !food_name ||
+            !category ||
+            !unit ||
+            !pickup_address ||
+            !Number.isFinite(Number(quantity)) ||
+            Number(quantity) <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: "Please provide valid donation details."
+            });
+        }
+
+        // Prototype: use existing restaurant ID 1
+        const restaurantId = 1;
+
+        // Get coordinates for the existing restaurant
+        const [restaurants] = await db.query(
+            `SELECT latitude, longitude
+             FROM Restaurants
+             WHERE restaurant_id = ?`,
+            [restaurantId]
+        );
+
+        if (restaurants.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: "Restaurant record not found."
+            });
+        }
+
+        // Set preparation time to now and expiry to 24 hours later
+        const preparedTime = new Date();
+        const expiryTime = new Date(
+            preparedTime.getTime() + 24 * 60 * 60 * 1000
+        );
+
+        // Format dates for MySQL DATETIME
+        function formatMySQLDate(date) {
+            return date.toISOString().slice(0, 19).replace("T", " ");
+        }
+
+        const [result] = await db.query(
+            `INSERT INTO FoodDonations
+            (
+                restaurant_id,
+                food_name,
+                category,
+                quantity,
+                unit,
+                prepared_time,
+                expiry_time,
+                pickup_address,
+                latitude,
+                longitude,
+                status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Available')`,
+            [
+                restaurantId,
+                food_name.trim(),
+                category,
+                Number(quantity),
+                unit,
+                formatMySQLDate(preparedTime),
+                formatMySQLDate(expiryTime),
+                pickup_address.trim(),
+                restaurants[0].latitude,
+                restaurants[0].longitude
+            ]
+        );
+
+        console.log("Donation saved. Food ID:", result.insertId);
+
+        return res.status(201).json({
+            success: true,
+            message: "Food donation saved successfully.",
+            foodId: result.insertId
+        });
+
+    } catch (error) {
+        console.error("Donation save error:", error);
+
+        return res.status(500).json({
+            success: false,
+            error: "Unable to save donation. Please try again."
+        });
+    }
+});
+```
 
 
 // ========================================
