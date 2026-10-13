@@ -597,8 +597,11 @@ app.post("/api/update-status", async (req, res) => {
             "Picked Up", "In Transit", "Delivered", "Cancelled"
         ];
 
-        if (!allowed.includes(status)) {
-            return res.status(400).json({ message: "Invalid status" });
+        if (!orderId || !allowed.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order ID or status."
+            });
         }
 
         await db.query(
@@ -606,13 +609,38 @@ app.post("/api/update-status", async (req, res) => {
             [status, orderId]
         );
 
-        res.json({ success: true, message: "Status updated!" });
+        // Keep the delivery record synchronized.
+        const deliveryStatus = status === "Cancelled"
+            ? "Failed"
+            : ["Created", "Accepted", "Driver Assigned"].includes(status)
+                ? "Assigned"
+                : status;
+
+        await db.query(
+            `UPDATE Deliveries
+             SET status = ?,
+                 pickup_time = CASE
+                     WHEN ? = 'Picked Up' AND pickup_time IS NULL
+                     THEN NOW() ELSE pickup_time END,
+                 delivery_time = CASE
+                     WHEN ? = 'Delivered' THEN NOW()
+                     ELSE delivery_time END
+             WHERE order_id = ?`,
+            [deliveryStatus, status, status, orderId]
+        );
+
+        return res.json({ success: true, status });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Update failed" });
+        console.error("Status update failed:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Status update failed."
+        });
     }
 });
+
+
 
 app.get("/orders", (req, res) => {
     res.render("orders");
