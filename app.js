@@ -50,42 +50,56 @@ async function testDatabase() {
 
 testDatabase();
 
-// SOCKET.IO REAL-TIME TRACKING
-io.on("connection", function(socket) {
+
+/* SOCKET.IO REAL-TIME TRACKING */
+
+const latestLocations = new Map();
+
+io.on("connection", function (socket) {
     console.log("User connected:", socket.id);
 
-    socket.on("join-order", function(data) {
-        const { orderId, role } = data;
+    socket.on("join-order", function (data) {
+        if (!data || !data.orderId || !data.role) return;
 
-        if (!orderId || !role) {
-            return;
+        const orderId = String(data.orderId);
+
+        socket.join(orderId);
+        socket.orderId = orderId;
+        socket.role = data.role;
+
+        console.log(`${data.role} joined order ${orderId}`);
+
+        // Send the last known location to a tracking page
+        // that opens after the delivery page.
+        if (data.role === "client" && latestLocations.has(orderId)) {
+            socket.emit("receive-location", latestLocations.get(orderId));
         }
-
-        socket.join(String(orderId));
-        socket.orderId = String(orderId);
-        socket.role = role;
-
-        console.log(`${role} joined order ${orderId}`);
     });
 
-    socket.on("send-location", function(data) {
-        if (!socket.orderId || socket.role !== "delivery") {
-            return;
-        }
+    socket.on("send-location", function (data) {
+        if (!socket.orderId || socket.role !== "delivery") return;
+        if (!data) return;
 
-        console.log(
-            "Location received:",
-            data.latitude,
-            data.longitude
-        );
+        const latitude = Number(data.latitude);
+        const longitude = Number(data.longitude);
 
-        io.to(socket.orderId).emit("receive-location", {
-            latitude: data.latitude,
-            longitude: data.longitude
-        });
+        if (
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude) ||
+            latitude < -90 || latitude > 90 ||
+            longitude < -180 || longitude > 180
+        ) return;
+
+        const location = { latitude, longitude };
+
+        latestLocations.set(socket.orderId, location);
+
+        console.log("Location received for order:", socket.orderId, location);
+
+        io.to(socket.orderId).emit("receive-location", location);
     });
 
-    socket.on("disconnect", function() {
+    socket.on("disconnect", function () {
         console.log("User disconnected:", socket.id);
     });
 });
