@@ -675,7 +675,7 @@ app.post("/api/ai-chat", async (req, res) => {
         }
 
         const result = await ai.interactions.create({
-            model: "gemini-3-flash-preview",
+            model: "gemini-3.8-flash",
             input: question,
             system_instruction: `
                 You are the Food Harvest AI assistant.
