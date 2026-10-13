@@ -697,17 +697,18 @@ app.post("/api/ai-chat", async (req, res) => {
                 "Sorry, I couldn't generate a response."
         });
 
-    } catch (error) {
-        console.error("AI assistant error:", error);
+ 
+} catch (error) {
+    console.error("AI CHAT FAILED:", error.message);
+    console.error("Status:", error.status);
+    console.error("Code:", error.code);
+    console.error("Details:", error.errorDetails);
 
-        return res.status(500).json({
-            reply: "The AI assistant is temporarily unavailable."
-        });
-    }
+    return res.status(500).json({
+        reply: "AI assistant failed. Check server logs."
+    });
+}
 });
-
-
-
 
 // START SERVER — keep this at the bottom
 const PORT = process.env.PORT || 3000;
