@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+const { GoogleGenAI } = require("@google/genai");
 const express = require("express");
 const app = express();
 const fs = require("fs");
