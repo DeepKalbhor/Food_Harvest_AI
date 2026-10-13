@@ -649,6 +649,58 @@ app.get("/api/dashboard", async (req, res) => {
     }
 });
 
+const { GoogleGenAI } = require("@google/genai");
+
+const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY
+});
+
+app.post("/api/ai-chat", async (req, res) => {
+    try {
+        const question = String(req.body.message || "").trim();
+
+        if (!question) {
+            return res.status(400).json({
+                message: "Please enter a question."
+            });
+        }
+
+        if (question.length > 1000) {
+            return res.status(400).json({
+                message: "Please keep your question under 1000 characters."
+            });
+        }
+
+        const result = await ai.interactions.create({
+            model: "gemini-3-flash-preview",
+            input: question,
+            system_instruction: `
+                You are the Food Harvest AI assistant.
+                The platform connects restaurants donating surplus
+                food, NGOs receiving donations, and delivery partners.
+
+                Explain how donations, NGO matching, orders,
+                delivery and tracking work.
+
+                Do not invent live database information.
+                Never reveal passwords, API keys or secrets.
+                If asked for an order's current status, explain
+                that it must be checked on the tracking page.
+            `
+        });
+
+        res.json({
+            reply: result.output_text ||
+                "Sorry, I couldn't generate a response."
+        });
+    } catch (error) {
+        console.error("AI assistant error:", error.message);
+        res.status(500).json({
+            message: "The AI assistant is temporarily unavailable."
+        });
+    }
+});
+
 
 // START SERVER — keep this at the bottom
 const PORT = process.env.PORT || 3000;
