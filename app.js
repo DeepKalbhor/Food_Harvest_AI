@@ -707,6 +707,7 @@ app.post("/api/ai-chat", async (req, res) => {
         message: "The AI assistant is temporarily unavailable."
     });
 }
+    });
 
 
 
