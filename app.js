@@ -657,19 +657,20 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
+
 app.post("/api/ai-chat", async (req, res) => {
     try {
         const question = String(req.body.message || "").trim();
 
         if (!question) {
             return res.status(400).json({
-                message: "Please enter a question."
+                reply: "Please enter a question."
             });
         }
 
         if (question.length > 1000) {
             return res.status(400).json({
-                message: "Please keep your question under 1000 characters."
+                reply: "Please keep your question under 1000 characters."
             });
         }
 
@@ -691,23 +692,20 @@ app.post("/api/ai-chat", async (req, res) => {
             `
         });
 
-        res.json({
+        return res.json({
             reply: result.output_text ||
                 "Sorry, I couldn't generate a response."
         });
- 
-} catch (error) {
-    console.error("AI assistant error:", {
-        message: error.message,
-        status: error.status,
-        code: error.code
-    });
 
-    res.status(500).json({
-        message: "The AI assistant is temporarily unavailable."
-    });
-}
-    });
+    } catch (error) {
+        console.error("AI assistant error:", error);
+
+        return res.status(500).json({
+            reply: "The AI assistant is temporarily unavailable."
+        });
+    }
+});
+
 
 
 
