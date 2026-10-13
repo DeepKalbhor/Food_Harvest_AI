@@ -695,13 +695,19 @@ app.post("/api/ai-chat", async (req, res) => {
             reply: result.output_text ||
                 "Sorry, I couldn't generate a response."
         });
-    } catch (error) {
-        console.error("AI assistant error:", error.message);
-        res.status(500).json({
-            message: "The AI assistant is temporarily unavailable."
-        });
-    }
-});
+ 
+} catch (error) {
+    console.error("AI assistant error:", {
+        message: error.message,
+        status: error.status,
+        code: error.code
+    });
+
+    res.status(500).json({
+        message: "The AI assistant is temporarily unavailable."
+    });
+}
+
 
 
 // START SERVER — keep this at the bottom
