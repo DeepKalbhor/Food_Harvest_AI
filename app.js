@@ -140,6 +140,12 @@ app.get("/matching", function(req, res) {
     res.render("matching");
 });
 
+app.get("/delivery-partner/:orderId", (req, res) => {
+    res.redirect(
+        "/delivery/" + encodeURIComponent(req.params.orderId)
+    );
+});
+
 app.get("/delivery/:orderId", async function(req, res) {
     try {
         const orderId = String(req.params.orderId || "").trim();
