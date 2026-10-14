@@ -106,11 +106,6 @@
             color: #68746b;
         }
 
-        a {
-            color: #216b35;
-            font-weight: bold;
-        }
-
         .action-links {
             display: flex;
             flex-wrap: wrap;
@@ -119,7 +114,13 @@
         }
 
         .action-links a {
-            display: inline-block;
+            color: #216b35;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .action-links .whatsapp {
+            color: #168447;
         }
     </style>
 </head>
@@ -146,6 +147,7 @@
         const foodId = Number(sessionStorage.getItem("foodId"));
 
         let orderCreated = false;
+        let loadingNGOs = false;
 
         function showMessage(text, isError = false) {
             message.style.display = "block";
@@ -178,13 +180,13 @@
                 result = await response.json();
             } catch {
                 throw new Error(
-                    "The server returned an invalid response. Check the Render logs."
+                    "Invalid server response. Please check the server logs."
                 );
             }
 
             if (!response.ok) {
                 throw new Error(
-                    result.message || "Request failed with status " + response.status
+                    result.message || "Request failed: " + response.status
                 );
             }
 
@@ -192,38 +194,34 @@
         }
 
         async function loadNGOs() {
+            if (loadingNGOs) return;
+            loadingNGOs = true;
+
             ngoList.innerHTML = "";
             message.style.display = "none";
 
-            if (!Number.isInteger(foodId) || foodId <= 0) {
+            try {
+                if (!Number.isInteger(foodId) || foodId <= 0) {
+                    throw new Error(
+                        "Donation ID not found. Please submit your donation again."
+                    );
+                }
+
                 addTextElement(
                     ngoList,
                     "p",
-                    "empty",
-                    "No donation ID was found."
+                    "",
+                    "Finding eligible NGOs..."
                 );
 
-                showMessage(
-                    "Please submit your donation again before opening NGO Matching.",
-                    true
-                );
-
-                return;
-            }
-
-            addTextElement(
-                ngoList,
-                "p",
-                "",
-                "Finding eligible NGOs..."
-            );
-
-            try {
                 const result = await fetchJSON(
-                    "/api/matching-ngo?foodId=" + encodeURIComponent(foodId)
+                    "/api/matching-ngo?foodId=" +
+                    encodeURIComponent(foodId)
                 );
 
-                const ngos = Array.isArray(result.ngos) ? result.ngos : [];
+                const ngos = Array.isArray(result.ngos)
+                    ? result.ngos
+                    : [];
 
                 ngoList.innerHTML = "";
 
@@ -245,11 +243,18 @@
                         card,
                         "h2",
                         "",
-                        ngo.name || ngo.ngo_name || ("NGO #" + ngo.ngo_id)
+                        ngo.name ||
+                        ngo.ngo_name ||
+                        ("NGO #" + ngo.ngo_id)
                     );
 
                     if (ngo.address) {
-                        addTextElement(card, "p", "detail", ngo.address);
+                        addTextElement(
+                            card,
+                            "p",
+                            "detail",
+                            ngo.address
+                        );
                     }
 
                     if (
@@ -262,7 +267,8 @@
                             "p",
                             "detail distance",
                             "Distance: " +
-                            Number(ngo.distance_km).toFixed(2) + " km"
+                            Number(ngo.distance_km).toFixed(2) +
+                            " km"
                         );
                     }
 
@@ -306,6 +312,9 @@
                 );
 
                 console.error("NGO matching error:", error);
+
+            } finally {
+                loadingNGOs = false;
             }
         }
 
@@ -346,30 +355,59 @@
                 orderCreated = true;
 
                 showMessage(
-                    "Order created successfully! Order ID: " + result.orderId
+                    "Order created successfully! Order ID: " +
+                    result.orderId
                 );
 
                 buttons.forEach(function(button) {
                     button.textContent = "Order Created";
                 });
 
+                // Use one order ID for all three links.
                 const orderId = result.orderId;
 
                 const links = document.createElement("div");
                 links.className = "action-links";
 
+                // Live tracking link.
                 const trackingLink = document.createElement("a");
                 trackingLink.href =
                     "/track/" + encodeURIComponent(orderId);
                 trackingLink.textContent = "Open Live Tracking";
 
+                // Delivery partner page.
                 const deliveryLink = document.createElement("a");
                 deliveryLink.href =
                     "/delivery/" + encodeURIComponent(orderId);
-                deliveryLink.textContent = "Open Delivery Partner Page";
+                deliveryLink.textContent =
+                    "Open Delivery Partner Page";
+
+                // WhatsApp notification with prefilled message.
+                const deliveryUrl =
+                    window.location.origin +
+                    "/delivery/" + encodeURIComponent(orderId);
+
+                const messageText =
+                    "New Food Harvest AI delivery order!\n\n" +
+                    "Order ID: " + orderId + "\n" +
+                    "Delivery page: " + deliveryUrl + "\n\n" +
+                    "Please open the delivery page and allow location access.";
+
+                const whatsappLink = document.createElement("a");
+                whatsappLink.className = "whatsapp";
+                whatsappLink.href =
+                    "https://wa.me/?text=" +
+                    encodeURIComponent(messageText);
+
+                whatsappLink.target = "_blank";
+                whatsappLink.rel = "noopener noreferrer";
+                whatsappLink.textContent =
+                    "Notify Delivery Partner on WhatsApp";
 
                 links.appendChild(trackingLink);
                 links.appendChild(deliveryLink);
+                links.appendChild(whatsappLink);
+
                 message.appendChild(links);
 
                 console.log("Order ID:", orderId);
@@ -386,7 +424,8 @@
                     button.disabled = false;
                 });
 
-                clickedButton.textContent = "Select NGO & Create Order";
+                clickedButton.textContent =
+                    "Select NGO & Create Order";
 
                 console.error("Create order error:", error);
             }
