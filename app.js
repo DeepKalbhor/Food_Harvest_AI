@@ -164,7 +164,17 @@ app.get("/delivery-partner/:orderId", (req, res) => {
         "/delivery/" + encodeURIComponent(req.params.orderId)
     );
 });
+app.get("/delivery-partner", (req, res) => {
+    return res.status(400).send(
+        "Open the delivery link generated after creating an order."
+    );
+});
 
+app.get("/delivery-partner/:orderId", (req, res) => {
+    return res.redirect(
+        "/delivery/" + encodeURIComponent(req.params.orderId)
+    );
+});
 
 /* DELIVERY PAGE */
 app.get("/delivery/:orderId", async function (req, res) {
