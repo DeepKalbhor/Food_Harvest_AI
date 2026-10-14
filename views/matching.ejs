@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,12 +110,24 @@
             color: #216b35;
             font-weight: bold;
         }
+
+        .action-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .action-links a {
+            display: inline-block;
+        }
     </style>
 </head>
 
 <body>
     <main class="container">
         <h1>Find a Matching NGO</h1>
+
         <p class="subtitle">
             Choose an eligible NGO to create a donation order and enable tracking.
         </p>
@@ -143,34 +155,76 @@
 
         function addTextElement(parent, tag, className, text) {
             const element = document.createElement(tag);
-            if (className) element.className = className;
+
+            if (className) {
+                element.className = className;
+            }
+
             element.textContent = text;
             parent.appendChild(element);
+
             return element;
         }
 
+        async function fetchJSON(url, options = {}) {
+            const response = await fetch(url, {
+                credentials: "same-origin",
+                ...options
+            });
+
+            let result;
+
+            try {
+                result = await response.json();
+            } catch {
+                throw new Error(
+                    "The server returned an invalid response. Check the Render logs."
+                );
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || "Request failed with status " + response.status
+                );
+            }
+
+            return result;
+        }
+
         async function loadNGOs() {
+            ngoList.innerHTML = "";
+            message.style.display = "none";
+
             if (!Number.isInteger(foodId) || foodId <= 0) {
-                ngoList.innerHTML = "";
+                addTextElement(
+                    ngoList,
+                    "p",
+                    "empty",
+                    "No donation ID was found."
+                );
+
                 showMessage(
-                    "Donation ID was not found. Please submit your donation again.",
+                    "Please submit your donation again before opening NGO Matching.",
                     true
                 );
+
                 return;
             }
 
+            addTextElement(
+                ngoList,
+                "p",
+                "",
+                "Finding eligible NGOs..."
+            );
+
             try {
-                const response = await fetch(
+                const result = await fetchJSON(
                     "/api/matching-ngo?foodId=" + encodeURIComponent(foodId)
                 );
 
-                const result = await response.json();
+                const ngos = Array.isArray(result.ngos) ? result.ngos : [];
 
-                if (!response.ok) {
-                    throw new Error(result.message || "Unable to load NGOs.");
-                }
-
-                const ngos = result.ngos || [];
                 ngoList.innerHTML = "";
 
                 if (ngos.length === 0) {
@@ -198,7 +252,11 @@
                         addTextElement(card, "p", "detail", ngo.address);
                     }
 
-                    if (ngo.distance_km !== undefined) {
+                    if (
+                        ngo.distance_km !== undefined &&
+                        ngo.distance_km !== null &&
+                        Number.isFinite(Number(ngo.distance_km))
+                    ) {
                         addTextElement(
                             card,
                             "p",
@@ -208,7 +266,10 @@
                         );
                     }
 
-                    if (ngo.capacity !== undefined) {
+                    if (
+                        ngo.capacity !== undefined &&
+                        ngo.capacity !== null
+                    ) {
                         addTextElement(
                             card,
                             "p",
@@ -231,7 +292,20 @@
 
             } catch (error) {
                 ngoList.innerHTML = "";
-                showMessage(error.message || "Unable to load matching NGOs.", true);
+
+                addTextElement(
+                    ngoList,
+                    "p",
+                    "empty",
+                    "Unable to load matching NGOs."
+                );
+
+                showMessage(
+                    error.message || "Unable to load matching NGOs.",
+                    true
+                );
+
+                console.error("NGO matching error:", error);
             }
         }
 
@@ -244,6 +318,7 @@
             }
 
             const buttons = ngoList.querySelectorAll("button");
+
             buttons.forEach(function(button) {
                 button.disabled = true;
             });
@@ -251,7 +326,7 @@
             clickedButton.textContent = "Creating order...";
 
             try {
-                const response = await fetch("/api/create-order", {
+                const result = await fetchJSON("/api/create-order", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -262,13 +337,14 @@
                     })
                 });
 
-                const result = await response.json();
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || "Order creation failed.");
+                if (!result.success || !result.orderId) {
+                    throw new Error(
+                        result.message || "Order creation failed."
+                    );
                 }
 
                 orderCreated = true;
+
                 showMessage(
                     "Order created successfully! Order ID: " + result.orderId
                 );
@@ -277,70 +353,42 @@
                     button.textContent = "Order Created";
                 });
 
-                
-const orderId = result.orderId;
+                const orderId = result.orderId;
 
-const trackingLink = document.createElement("a");
-trackingLink.href = "/track/" + encodeURIComponent(orderId);
-trackingLink.textContent = "Open Live Tracking";
-trackingLink.style.display = "inline-block";
-trackingLink.style.marginTop = "12px";
+                const links = document.createElement("div");
+                links.className = "action-links";
 
-const deliveryLink = document.createElement("a");
-deliveryLink.href = "/delivery/" + encodeURIComponent(orderId);
-deliveryLink.textContent = "Open Delivery Partner Page";
-deliveryLink.style.display = "inline-block";
-deliveryLink.style.marginTop = "12px";
-deliveryLink.style.marginLeft = "16px";
+                const trackingLink = document.createElement("a");
+                trackingLink.href =
+                    "/track/" + encodeURIComponent(orderId);
+                trackingLink.textContent = "Open Live Tracking";
 
-message.appendChild(document.createElement("br"));
-message.appendChild(trackingLink);
-message.appendChild(deliveryLink);
+                const deliveryLink = document.createElement("a");
+                deliveryLink.href =
+                    "/delivery/" + encodeURIComponent(orderId);
+                deliveryLink.textContent = "Open Delivery Partner Page";
 
-console.log("Order ID:", orderId);
-console.log("Tracking URL:", trackingLink.href);
-console.log("Delivery URL:", deliveryLink.href);
+                links.appendChild(trackingLink);
+                links.appendChild(deliveryLink);
+                message.appendChild(links);
 
-
-const orderId = result.orderId;
-
-const deliveryUrl =
-    window.location.origin +
-    "/delivery-partner/" + encodeURIComponent(orderId);
-
-const trackingUrl =
-    window.location.origin +
-    "/track/" + encodeURIComponent(orderId);
-
-const messageText =
-    "New Food Harvest AI delivery order!\n\n" +
-    "Order ID: " + orderId + "\n" +
-    "Open your delivery page: " + deliveryUrl + "\n\n" +
-    "Please open the delivery page and allow location access.";
-
-const whatsappUrl =
-    "https://wa.me/?text=" + encodeURIComponent(messageText);
-
-const whatsappLink = document.createElement("a");
-whatsappLink.href = whatsappUrl;
-whatsappLink.target = "_blank";
-whatsappLink.rel = "noopener";
-whatsappLink.textContent = "Notify Delivery Partner on WhatsApp";
-whatsappLink.style.display = "inline-block";
-whatsappLink.style.marginTop = "12px";
-
-message.appendChild(document.createElement("br"));
-message.appendChild(whatsappLink);
-
+                console.log("Order ID:", orderId);
+                console.log("Tracking URL:", trackingLink.href);
+                console.log("Delivery URL:", deliveryLink.href);
 
             } catch (error) {
-                showMessage(error.message || "Unable to create order.", true);
+                showMessage(
+                    error.message || "Unable to create order.",
+                    true
+                );
 
                 buttons.forEach(function(button) {
                     button.disabled = false;
                 });
 
                 clickedButton.textContent = "Select NGO & Create Order";
+
+                console.error("Create order error:", error);
             }
         }
 
@@ -348,3 +396,4 @@ message.appendChild(whatsappLink);
     </script>
 </body>
 </html>
+```
