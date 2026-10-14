@@ -50,82 +50,101 @@ async function testDatabase() {
 
 testDatabase();
 
-// SOCKET.IO REAL-TIME TRACKING
-// Only existing orders can create tracking rooms. Both pages must use the same orderId.
-const latestLocations = new Map();
 
-io.on("connection", function(socket) {
+/* SOCKET.IO REAL-TIME TRACKING */
+
+io.on("connection", function (socket) {
     console.log("Socket connected:", socket.id);
 
-    socket.on("join-order", async function(data = {}) {
+    // Join an existing order only.
+    socket.on("join-order", async function (data) {
         try {
-            const orderId = String(data.orderId || "").trim();
-            const role = data.role;
-
-            if (!orderId || !["delivery", "client"].includes(role)) {
-                socket.emit("tracking-error", { message: "Invalid order or role." });
+            if (
+                !data ||
+                !data.orderId ||
+                !["delivery", "client"].includes(data.role)
+            ) {
                 return;
             }
 
-            // Verify the order exists before allowing a socket into its room.
+            const orderId = String(data.orderId);
+
             const [orders] = await db.query(
-                "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
+                "SELECT order_id FROM Orders WHERE order_id = ?",
                 [orderId]
             );
 
             if (orders.length === 0) {
-                socket.emit("tracking-error", { message: "Order not found. Create the order first." });
-                console.log("Rejected tracking join for missing order:", orderId);
+                console.log("Invalid order:", orderId);
                 return;
             }
 
-            // Leave any previous order room before switching orders.
-            if (socket.orderId) socket.leave(socket.orderId);
-
             socket.orderId = orderId;
-            socket.role = role;
+            socket.role = data.role;
             socket.join(orderId);
 
-            console.log(`${role} joined order ${orderId}`);
-
-            // If tracking opens after the delivery partner starts, send the latest location.
-            if (role === "client" && latestLocations.has(orderId)) {
-                socket.emit("receive-location", latestLocations.get(orderId));
-            }
+            console.log(
+                data.role + " joined order:",
+                orderId
+            );
         } catch (error) {
-            console.error("join-order failed:", error.message);
-            socket.emit("tracking-error", { message: "Unable to join tracking room." });
+            console.error("Join order error:", error.message);
         }
     });
 
-    socket.on("send-location", function(data = {}) {
-        // Only a socket that successfully joined as delivery can publish GPS.
-        if (!socket.orderId || socket.role !== "delivery") return;
+    // Accept GPS only from a delivery socket.
+    socket.on("send-location", function (data) {
+        if (
+            !socket.orderId ||
+            socket.role !== "delivery" ||
+            !data
+        ) {
+            return;
+        }
 
         const latitude = Number(data.latitude);
         const longitude = Number(data.longitude);
 
         if (
-            !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
-            latitude < -90 || latitude > 90 ||
-            longitude < -180 || longitude > 180
-        ) return;
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude) ||
+            latitude < -90 ||
+            latitude > 90 ||
+            longitude < -180 ||
+            longitude > 180
+        ) {
+            return;
+        }
 
         const location = {
-            latitude,
-            longitude,
-            updatedAt: Date.now()
+            latitude: latitude,
+            longitude: longitude
         };
 
-        latestLocations.set(socket.orderId, location);
-        io.to(socket.orderId).emit("receive-location", location);
-        console.log("GPS received for order:", socket.orderId, latitude, longitude);
+        // Broadcast only to clients tracking this order.
+        io.to(socket.orderId).emit(
+            "receive-location",
+            location
+        );
+
+        console.log(
+            "GPS received for order:",
+            socket.orderId,
+            latitude,
+            longitude
+        );
     });
 
-    socket.on("disconnect", function() {
-        console.log("Socket disconnected:", socket.id);
+    socket.on("disconnect", function () {
+        console.log(
+            "Socket disconnected:",
+            socket.id,
+            socket.orderId || "",
+            socket.role || ""
+        );
     });
 });
+
 
 // PAGE ROUTES
 app.get("/", function(req, res) {
@@ -146,43 +165,53 @@ app.get("/delivery-partner/:orderId", (req, res) => {
     );
 });
 
-app.get("/delivery/:orderId", async function(req, res) {
+
+/* DELIVERY PAGE */
+app.get("/delivery/:orderId", async function (req, res) {
     try {
-        const orderId = String(req.params.orderId || "").trim();
+        const orderId = req.params.orderId;
+
         const [orders] = await db.query(
-            "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
+            "SELECT order_id FROM Orders WHERE order_id = ?",
             [orderId]
         );
 
         if (orders.length === 0) {
-            return res.status(404).send("Order not found. Create the order before starting delivery tracking.");
+            return res.status(404).send("Order not found.");
         }
 
-        return res.render("delivery", { orderId: orders[0].order_id });
+        return res.render("delivery", {
+            orderId: orderId
+        });
     } catch (error) {
-        console.error("Delivery page error:", error.message);
-        return res.status(500).send("Unable to open the delivery page.");
+        console.error("Delivery page error:", error);
+        return res.status(500).send("Unable to open delivery page.");
     }
 });
 
-app.get("/track/:orderId", async function(req, res) {
+/* TRACKING PAGE */
+app.get("/track/:orderId", async function (req, res) {
     try {
-        const orderId = String(req.params.orderId || "").trim();
+        const orderId = req.params.orderId;
+
         const [orders] = await db.query(
-            "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
+            "SELECT order_id FROM Orders WHERE order_id = ?",
             [orderId]
         );
 
         if (orders.length === 0) {
-            return res.status(404).send("Order not found. Check the tracking link.");
+            return res.status(404).send("Order not found.");
         }
 
-        return res.render("track", { orderId: orders[0].order_id });
+        return res.render("track", {
+            orderId: orderId
+        });
     } catch (error) {
-        console.error("Tracking page error:", error.message);
-        return res.status(500).send("Unable to open the tracking page.");
+        console.error("Tracking page error:", error);
+        return res.status(500).send("Unable to open tracking page.");
     }
 });
+
 
 // SAVE FOOD DONATION
 app.post("/api/donations", async function(req, res) {
