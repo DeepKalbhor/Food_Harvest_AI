@@ -50,59 +50,83 @@ async function testDatabase() {
 
 testDatabase();
 
-
 // SOCKET.IO REAL-TIME TRACKING
+// Only existing orders can create tracking rooms. Both pages must use the same orderId.
 const latestLocations = new Map();
 
 io.on("connection", function(socket) {
-    socket.on("join-order", function(data) {
-        if (!data || !data.orderId ||
-            !["delivery", "client"].includes(data.role)) {
-            return;
-        }
+    console.log("Socket connected:", socket.id);
 
-        socket.orderId = String(data.orderId);
-        socket.role = data.role;
-        socket.join(socket.orderId);
+    socket.on("join-order", async function(data = {}) {
+        try {
+            const orderId = String(data.orderId || "").trim();
+            const role = data.role;
 
-        console.log("Joined:", socket.role, socket.orderId);
+            if (!orderId || !["delivery", "client"].includes(role)) {
+                socket.emit("tracking-error", { message: "Invalid order or role." });
+                return;
+            }
 
-        if (
-            socket.role === "client" &&
-            latestLocations.has(socket.orderId)
-        ) {
-            socket.emit(
-                "receive-location",
-                latestLocations.get(socket.orderId)
+            // Verify the order exists before allowing a socket into its room.
+            const [orders] = await db.query(
+                "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
+                [orderId]
             );
+
+            if (orders.length === 0) {
+                socket.emit("tracking-error", { message: "Order not found. Create the order first." });
+                console.log("Rejected tracking join for missing order:", orderId);
+                return;
+            }
+
+            // Leave any previous order room before switching orders.
+            if (socket.orderId) socket.leave(socket.orderId);
+
+            socket.orderId = orderId;
+            socket.role = role;
+            socket.join(orderId);
+
+            console.log(`${role} joined order ${orderId}`);
+
+            // If tracking opens after the delivery partner starts, send the latest location.
+            if (role === "client" && latestLocations.has(orderId)) {
+                socket.emit("receive-location", latestLocations.get(orderId));
+            }
+        } catch (error) {
+            console.error("join-order failed:", error.message);
+            socket.emit("tracking-error", { message: "Unable to join tracking room." });
         }
     });
 
-    socket.on("send-location", function(data) {
+    socket.on("send-location", function(data = {}) {
+        // Only a socket that successfully joined as delivery can publish GPS.
         if (!socket.orderId || socket.role !== "delivery") return;
 
-        const latitude = Number(data?.latitude);
-        const longitude = Number(data?.longitude);
+        const latitude = Number(data.latitude);
+        const longitude = Number(data.longitude);
 
         if (
-            !Number.isFinite(latitude) ||
-            !Number.isFinite(longitude) ||
-            Math.abs(latitude) > 90 ||
-            Math.abs(longitude) > 180
+            !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+            latitude < -90 || latitude > 90 ||
+            longitude < -180 || longitude > 180
         ) return;
 
-        const location = { latitude, longitude };
+        const location = {
+            latitude,
+            longitude,
+            updatedAt: Date.now()
+        };
 
         latestLocations.set(socket.orderId, location);
         io.to(socket.orderId).emit("receive-location", location);
-
-        console.log("GPS:", socket.orderId, location);
+        console.log("GPS received for order:", socket.orderId, latitude, longitude);
     });
 
     socket.on("disconnect", function() {
-        console.log("User disconnected:", socket.id);
+        console.log("Socket disconnected:", socket.id);
     });
 });
+
 // PAGE ROUTES
 app.get("/", function(req, res) {
     res.render("index");
@@ -115,42 +139,43 @@ app.get("/donate", function(req, res) {
 app.get("/matching", function(req, res) {
     res.render("matching");
 });
-// Delivery partner opens this page independently.
-app.get("/delivery-partner", async function(req, res) {
+
+app.get("/delivery/:orderId", async function(req, res) {
     try {
-        const [rows] = await db.query(
-            `SELECT order_id
-             FROM Orders
-             WHERE order_status IN ('Created', 'Accepted', 'Driver Assigned')
-             ORDER BY created_at ASC
-             LIMIT 1`
+        const orderId = String(req.params.orderId || "").trim();
+        const [orders] = await db.query(
+            "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
+            [orderId]
         );
 
-        if (rows.length === 0) {
-            return res.status(200).send(
-                "No orders are currently awaiting delivery."
-            );
+        if (orders.length === 0) {
+            return res.status(404).send("Order not found. Create the order before starting delivery tracking.");
         }
 
-        return res.redirect(
-            "/delivery/" + encodeURIComponent(rows[0].order_id)
-        );
+        return res.render("delivery", { orderId: orders[0].order_id });
     } catch (error) {
-        console.error("Delivery partner page error:", error);
-        return res.status(500).send("Unable to load available orders.");
+        console.error("Delivery page error:", error.message);
+        return res.status(500).send("Unable to open the delivery page.");
     }
 });
 
-app.get("/delivery/:orderId", function(req, res) {
-    res.render("delivery", {
-        orderId: req.params.orderId
-    });
-});
+app.get("/track/:orderId", async function(req, res) {
+    try {
+        const orderId = String(req.params.orderId || "").trim();
+        const [orders] = await db.query(
+            "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
+            [orderId]
+        );
 
-app.get("/track/:orderId", function(req, res) {
-    res.render("track", {
-        orderId: req.params.orderId
-    });
+        if (orders.length === 0) {
+            return res.status(404).send("Order not found. Check the tracking link.");
+        }
+
+        return res.render("track", { orderId: orders[0].order_id });
+    } catch (error) {
+        console.error("Tracking page error:", error.message);
+        return res.status(500).send("Unable to open the tracking page.");
+    }
 });
 
 // SAVE FOOD DONATION
@@ -635,11 +660,8 @@ app.post("/api/update-status", async (req, res) => {
             "Picked Up", "In Transit", "Delivered", "Cancelled"
         ];
 
-        if (!orderId || !allowed.includes(status)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid order ID or status."
-            });
+        if (!allowed.includes(status)) {
+            return res.status(400).json({ message: "Invalid status" });
         }
 
         await db.query(
@@ -647,38 +669,13 @@ app.post("/api/update-status", async (req, res) => {
             [status, orderId]
         );
 
-        // Keep the delivery record synchronized.
-        const deliveryStatus = status === "Cancelled"
-            ? "Failed"
-            : ["Created", "Accepted", "Driver Assigned"].includes(status)
-                ? "Assigned"
-                : status;
-
-        await db.query(
-            `UPDATE Deliveries
-             SET status = ?,
-                 pickup_time = CASE
-                     WHEN ? = 'Picked Up' AND pickup_time IS NULL
-                     THEN NOW() ELSE pickup_time END,
-                 delivery_time = CASE
-                     WHEN ? = 'Delivered' THEN NOW()
-                     ELSE delivery_time END
-             WHERE order_id = ?`,
-            [deliveryStatus, status, status, orderId]
-        );
-
-        return res.json({ success: true, status });
+        res.json({ success: true, message: "Status updated!" });
 
     } catch (error) {
-        console.error("Status update failed:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Status update failed."
-        });
+        console.error(error);
+        res.status(500).json({ message: "Update failed" });
     }
 });
-
-
 
 app.get("/orders", (req, res) => {
     res.render("orders");
