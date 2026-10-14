@@ -302,6 +302,37 @@ console.log("Tracking URL:", trackingLink.href);
 console.log("Delivery URL:", deliveryLink.href);
 
 
+const orderId = result.orderId;
+
+const deliveryUrl =
+    window.location.origin +
+    "/delivery-partner/" + encodeURIComponent(orderId);
+
+const trackingUrl =
+    window.location.origin +
+    "/track/" + encodeURIComponent(orderId);
+
+const messageText =
+    "New Food Harvest AI delivery order!\n\n" +
+    "Order ID: " + orderId + "\n" +
+    "Open your delivery page: " + deliveryUrl + "\n\n" +
+    "Please open the delivery page and allow location access.";
+
+const whatsappUrl =
+    "https://wa.me/?text=" + encodeURIComponent(messageText);
+
+const whatsappLink = document.createElement("a");
+whatsappLink.href = whatsappUrl;
+whatsappLink.target = "_blank";
+whatsappLink.rel = "noopener";
+whatsappLink.textContent = "Notify Delivery Partner on WhatsApp";
+whatsappLink.style.display = "inline-block";
+whatsappLink.style.marginTop = "12px";
+
+message.appendChild(document.createElement("br"));
+message.appendChild(whatsappLink);
+
+
             } catch (error) {
                 showMessage(error.message || "Unable to create order.", true);
 
