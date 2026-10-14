@@ -277,22 +277,30 @@
                     button.textContent = "Order Created";
                 });
 
-                const trackingLink = document.createElement("a");
-                trackingLink.href = result.trackingUrl;
-                trackingLink.textContent = "Open Live Tracking";
-                trackingLink.style.display = "inline-block";
-                trackingLink.style.marginTop = "12px";
+                
+const orderId = result.orderId;
 
-                const deliveryLink = document.createElement("a");
-                deliveryLink.href = result.deliveryUrl;
-                deliveryLink.textContent = "Open Delivery Partner Page";
-                deliveryLink.style.display = "inline-block";
-                deliveryLink.style.marginTop = "12px";
-                deliveryLink.style.marginLeft = "16px";
+const trackingLink = document.createElement("a");
+trackingLink.href = "/track/" + encodeURIComponent(orderId);
+trackingLink.textContent = "Open Live Tracking";
+trackingLink.style.display = "inline-block";
+trackingLink.style.marginTop = "12px";
 
-                message.appendChild(document.createElement("br"));
-                message.appendChild(trackingLink);
-                message.appendChild(deliveryLink);
+const deliveryLink = document.createElement("a");
+deliveryLink.href = "/delivery/" + encodeURIComponent(orderId);
+deliveryLink.textContent = "Open Delivery Partner Page";
+deliveryLink.style.display = "inline-block";
+deliveryLink.style.marginTop = "12px";
+deliveryLink.style.marginLeft = "16px";
+
+message.appendChild(document.createElement("br"));
+message.appendChild(trackingLink);
+message.appendChild(deliveryLink);
+
+console.log("Order ID:", orderId);
+console.log("Tracking URL:", trackingLink.href);
+console.log("Delivery URL:", deliveryLink.href);
+
 
             } catch (error) {
                 showMessage(error.message || "Unable to create order.", true);
