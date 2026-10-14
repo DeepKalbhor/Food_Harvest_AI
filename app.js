@@ -50,101 +50,76 @@ async function testDatabase() {
 
 testDatabase();
 
+// SOCKET.IO REAL-TIME TRACKING
+// Both pages must join the same existing order room. No stale GPS is replayed.
 
-/* SOCKET.IO REAL-TIME TRACKING */
-
-io.on("connection", function (socket) {
+io.on("connection", function(socket) {
     console.log("Socket connected:", socket.id);
 
-    // Join an existing order only.
-    socket.on("join-order", async function (data) {
+    socket.on("join-order", async function(data = {}) {
         try {
-            if (
-                !data ||
-                !data.orderId ||
-                !["delivery", "client"].includes(data.role)
-            ) {
+            const orderId = String(data.orderId || "").trim();
+            const role = data.role;
+
+            if (!orderId || !["delivery", "client"].includes(role)) {
+                socket.emit("tracking-error", { message: "Invalid order or role." });
                 return;
             }
 
-            const orderId = String(data.orderId);
-
+            // Verify the order exists before allowing a socket into its room.
             const [orders] = await db.query(
-                "SELECT order_id FROM Orders WHERE order_id = ?",
+                "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
                 [orderId]
             );
 
             if (orders.length === 0) {
-                console.log("Invalid order:", orderId);
+                socket.emit("tracking-error", { message: "Order not found. Create the order first." });
+                console.log("Rejected tracking join for missing order:", orderId);
                 return;
             }
 
+            // Leave any previous order room before switching orders.
+            if (socket.orderId) socket.leave(socket.orderId);
+
             socket.orderId = orderId;
-            socket.role = data.role;
+            socket.role = role;
             socket.join(orderId);
 
-            console.log(
-                data.role + " joined order:",
-                orderId
-            );
+            console.log(`${role} joined order ${orderId}`);
+
         } catch (error) {
-            console.error("Join order error:", error.message);
+            console.error("join-order failed:", error.message);
+            socket.emit("tracking-error", { message: "Unable to join tracking room." });
         }
     });
 
-    // Accept GPS only from a delivery socket.
-    socket.on("send-location", function (data) {
-        if (
-            !socket.orderId ||
-            socket.role !== "delivery" ||
-            !data
-        ) {
-            return;
-        }
+    socket.on("send-location", function(data = {}) {
+        // Only a socket that successfully joined as delivery can publish GPS.
+        if (!socket.orderId || socket.role !== "delivery") return;
 
         const latitude = Number(data.latitude);
         const longitude = Number(data.longitude);
 
         if (
-            !Number.isFinite(latitude) ||
-            !Number.isFinite(longitude) ||
-            latitude < -90 ||
-            latitude > 90 ||
-            longitude < -180 ||
-            longitude > 180
-        ) {
-            return;
-        }
+            !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+            latitude < -90 || latitude > 90 ||
+            longitude < -180 || longitude > 180
+        ) return;
 
         const location = {
-            latitude: latitude,
-            longitude: longitude
+            latitude,
+            longitude,
+            updatedAt: Date.now()
         };
 
-        // Broadcast only to clients tracking this order.
-        io.to(socket.orderId).emit(
-            "receive-location",
-            location
-        );
-
-        console.log(
-            "GPS received for order:",
-            socket.orderId,
-            latitude,
-            longitude
-        );
+        io.to(socket.orderId).emit("receive-location", location);
+        console.log("GPS received for order:", socket.orderId, latitude, longitude);
     });
 
-    socket.on("disconnect", function () {
-        console.log(
-            "Socket disconnected:",
-            socket.id,
-            socket.orderId || "",
-            socket.role || ""
-        );
+    socket.on("disconnect", function() {
+        console.log("Socket disconnected:", socket.id);
     });
 });
-
 
 // PAGE ROUTES
 app.get("/", function(req, res) {
@@ -159,66 +134,101 @@ app.get("/matching", function(req, res) {
     res.render("matching");
 });
 
-
-app.get("/delivery-partner", (req, res) => {
-    return res.status(400).send(
-        "Please open the delivery link generated for your order."
-    );
+// Standalone delivery-partner entry page: the partner enters an order ID.
+app.get("/delivery-partner", function(req, res) {
+    res.send(`
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Food Harvest AI | Delivery Partner</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#f4f8f5;margin:0;min-height:100vh;display:grid;place-items:center}
+    main{background:#fff;width:min(90%,380px);padding:28px;border-radius:14px;box-shadow:0 4px 20px #0001;box-sizing:border-box}
+    h2{color:#176b49;margin-top:0}p{color:#56645c;line-height:1.5}
+    input,button{width:100%;padding:12px;margin-top:12px;box-sizing:border-box;border-radius:7px;font-size:15px}
+    input{border:1px solid #ccc}button{background:#176b49;color:#fff;border:0;cursor:pointer}
+  </style>
+</head>
+<body>
+  <main>
+    <h2>Delivery Partner</h2>
+    <p>Enter the order ID shared by the sender or NGO.</p>
+    <form id="orderForm">
+      <input id="orderId" placeholder="FHA-123456789-123" required autocomplete="off">
+      <button type="submit">Open Delivery Page</button>
+    </form>
+    <p id="message" role="status"></p>
+  </main>
+  <script>
+    document.getElementById("orderForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+      const orderId = document.getElementById("orderId").value.trim();
+      const message = document.getElementById("message");
+      if (!/^FHA-[A-Za-z0-9-]+$/.test(orderId)) {
+        message.textContent = "Enter a valid order ID.";
+        return;
+      }
+      message.textContent = "Checking order...";
+      try {
+        const response = await fetch("/api/orders/" + encodeURIComponent(orderId));
+        if (!response.ok) {
+          message.textContent = response.status === 404 ? "Order not found. Check the ID." : "Unable to check order. Try again.";
+          return;
+        }
+        window.location.href = "/delivery/" + encodeURIComponent(orderId);
+      } catch (error) {
+        message.textContent = "Connection failed. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>`);
 });
 
-app.get("/delivery-partner/:orderId", (req, res) => {
-    return res.redirect(
-        "/delivery/" + encodeURIComponent(req.params.orderId)
-    );
+// Optional order-specific delivery-partner URL.
+app.get("/delivery-partner/:orderId", function(req, res) {
+    return res.redirect("/delivery/" + encodeURIComponent(req.params.orderId));
 });
 
-
-/* DELIVERY PAGE */
-app.get("/delivery/:orderId", async function (req, res) {
+app.get("/delivery/:orderId", async function(req, res) {
     try {
-        const orderId = req.params.orderId;
-
+        const orderId = String(req.params.orderId || "").trim();
         const [orders] = await db.query(
-            "SELECT order_id FROM Orders WHERE order_id = ?",
+            "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
             [orderId]
         );
 
         if (orders.length === 0) {
-            return res.status(404).send("Order not found.");
+            return res.status(404).send("Order not found. Create the order before starting delivery tracking.");
         }
 
-        return res.render("delivery", {
-            orderId: orderId
-        });
+        return res.render("delivery", { orderId: orders[0].order_id });
     } catch (error) {
-        console.error("Delivery page error:", error);
-        return res.status(500).send("Unable to open delivery page.");
+        console.error("Delivery page error:", error.message);
+        return res.status(500).send("Unable to open the delivery page.");
     }
 });
 
-/* TRACKING PAGE */
-app.get("/track/:orderId", async function (req, res) {
+app.get("/track/:orderId", async function(req, res) {
     try {
-        const orderId = req.params.orderId;
-
+        const orderId = String(req.params.orderId || "").trim();
         const [orders] = await db.query(
-            "SELECT order_id FROM Orders WHERE order_id = ?",
+            "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
             [orderId]
         );
 
         if (orders.length === 0) {
-            return res.status(404).send("Order not found.");
+            return res.status(404).send("Order not found. Check the tracking link.");
         }
 
-        return res.render("track", {
-            orderId: orderId
-        });
+        return res.render("track", { orderId: orders[0].order_id });
     } catch (error) {
-        console.error("Tracking page error:", error);
-        return res.status(500).send("Unable to open tracking page.");
+        console.error("Tracking page error:", error.message);
+        return res.status(500).send("Unable to open the tracking page.");
     }
 });
-
 
 // SAVE FOOD DONATION
 app.post("/api/donations", async function(req, res) {
@@ -530,7 +540,7 @@ app.post("/api/matching", async function(req, res) {
             ngoName: matchedOrder.ngo_name,
             orderId: orderId,
             matchingScore: matchedOrder.MatchingScore,
-            deliveryUrl: `${baseUrl}/delivery/${orderId}`,
+            deliveryUrl: `${baseUrl}/delivery-partner/${encodeURIComponent(orderId)}`,
             trackingUrl: `${baseUrl}/track/${orderId}`
         });
     } catch (error) {
