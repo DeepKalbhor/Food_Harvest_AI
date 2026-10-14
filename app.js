@@ -51,59 +51,58 @@ async function testDatabase() {
 testDatabase();
 
 
-/* SOCKET.IO REAL-TIME TRACKING */
-
+// SOCKET.IO REAL-TIME TRACKING
 const latestLocations = new Map();
 
-io.on("connection", function (socket) {
-    console.log("User connected:", socket.id);
+io.on("connection", function(socket) {
+    socket.on("join-order", function(data) {
+        if (!data || !data.orderId ||
+            !["delivery", "client"].includes(data.role)) {
+            return;
+        }
 
-    socket.on("join-order", function (data) {
-        if (!data || !data.orderId || !data.role) return;
-
-        const orderId = String(data.orderId);
-
-        socket.join(orderId);
-        socket.orderId = orderId;
+        socket.orderId = String(data.orderId);
         socket.role = data.role;
+        socket.join(socket.orderId);
 
-        console.log(`${data.role} joined order ${orderId}`);
+        console.log("Joined:", socket.role, socket.orderId);
 
-        // Send the last known location to a tracking page
-        // that opens after the delivery page.
-        if (data.role === "client" && latestLocations.has(orderId)) {
-            socket.emit("receive-location", latestLocations.get(orderId));
+        if (
+            socket.role === "client" &&
+            latestLocations.has(socket.orderId)
+        ) {
+            socket.emit(
+                "receive-location",
+                latestLocations.get(socket.orderId)
+            );
         }
     });
 
-    socket.on("send-location", function (data) {
+    socket.on("send-location", function(data) {
         if (!socket.orderId || socket.role !== "delivery") return;
-        if (!data) return;
 
-        const latitude = Number(data.latitude);
-        const longitude = Number(data.longitude);
+        const latitude = Number(data?.latitude);
+        const longitude = Number(data?.longitude);
 
         if (
             !Number.isFinite(latitude) ||
             !Number.isFinite(longitude) ||
-            latitude < -90 || latitude > 90 ||
-            longitude < -180 || longitude > 180
+            Math.abs(latitude) > 90 ||
+            Math.abs(longitude) > 180
         ) return;
 
         const location = { latitude, longitude };
 
         latestLocations.set(socket.orderId, location);
-
-        console.log("Location received for order:", socket.orderId, location);
-
         io.to(socket.orderId).emit("receive-location", location);
+
+        console.log("GPS:", socket.orderId, location);
     });
 
-    socket.on("disconnect", function () {
+    socket.on("disconnect", function() {
         console.log("User disconnected:", socket.id);
     });
 });
-
 // PAGE ROUTES
 app.get("/", function(req, res) {
     res.render("index");
@@ -115,6 +114,31 @@ app.get("/donate", function(req, res) {
 
 app.get("/matching", function(req, res) {
     res.render("matching");
+});
+// Delivery partner opens this page independently.
+app.get("/delivery-partner", async function(req, res) {
+    try {
+        const [rows] = await db.query(
+            `SELECT order_id
+             FROM Orders
+             WHERE order_status IN ('Created', 'Accepted', 'Driver Assigned')
+             ORDER BY created_at ASC
+             LIMIT 1`
+        );
+
+        if (rows.length === 0) {
+            return res.status(200).send(
+                "No orders are currently awaiting delivery."
+            );
+        }
+
+        return res.redirect(
+            "/delivery/" + encodeURIComponent(rows[0].order_id)
+        );
+    } catch (error) {
+        console.error("Delivery partner page error:", error);
+        return res.status(500).send("Unable to load available orders.");
+    }
 });
 
 app.get("/delivery/:orderId", function(req, res) {
