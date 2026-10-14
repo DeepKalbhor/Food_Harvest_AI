@@ -159,14 +159,10 @@ app.get("/matching", function(req, res) {
     res.render("matching");
 });
 
-app.get("/delivery-partner/:orderId", (req, res) => {
-    res.redirect(
-        "/delivery/" + encodeURIComponent(req.params.orderId)
-    );
-});
+
 app.get("/delivery-partner", (req, res) => {
     return res.status(400).send(
-        "Open the delivery link generated after creating an order."
+        "Please open the delivery link generated for your order."
     );
 });
 
@@ -175,6 +171,7 @@ app.get("/delivery-partner/:orderId", (req, res) => {
         "/delivery/" + encodeURIComponent(req.params.orderId)
     );
 });
+
 
 /* DELIVERY PAGE */
 app.get("/delivery/:orderId", async function (req, res) {
@@ -673,7 +670,7 @@ app.post("/api/create-order", async function(req, res) {
             message: "Donation matched and order created successfully.",
             orderId: orderId,
             trackingUrl: "/track/" + encodeURIComponent(orderId),
-            deliveryUrl: "/delivery/" + encodeURIComponent(orderId)
+            deliveryUrl: "/delivery-partner/" + encodeURIComponent(orderId)
         });
 
     } catch (error) {
