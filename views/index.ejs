@@ -6,335 +6,210 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Harvest AI</title>
 
-    <link rel="stylesheet" href="/css/style.css">
-
     <style>
-        :root {
-            --green: #176b45;
-            --light-green: #e8f5ec;
-            --text: #26352b;
-            --muted: #68766c;
-            --border: #e2eae3;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
         body {
-            margin: 0;
             font-family: Arial, sans-serif;
-            color: var(--text);
-            background: #f6f9f6;
+            margin: 0;
+            background: #f8faf8;
+            color: #333;
         }
 
-        a {
-            text-decoration: none;
-        }
-
-        /* Navigation */
-        .navbar {
+        nav {
+            background: white;
+            padding: 18px 8%;
+            border-bottom: 1px solid #ddd;
             display: flex;
             justify-content: space-between;
-            align-items: center;
             flex-wrap: wrap;
-            gap: 20px;
-            padding: 18px 6%;
-            background: white;
-            border-bottom: 1px solid var(--border);
+            gap: 15px;
         }
 
-        .logo {
-            font-size: 21px;
-            font-weight: bold;
+        nav strong {
+            color: #247747;
+            font-size: 20px;
         }
 
-        .logo span {
-            color: var(--green);
-        }
-
-        .nav-links {
+        nav div {
             display: flex;
             flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .nav-links a {
-            color: var(--text);
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .nav-links a:hover {
-            color: var(--green);
-        }
-
-        /* Hero */
-        .hero {
-            max-width: 1050px;
-            margin: auto;
-            padding: 65px 24px 45px;
-            text-align: center;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 8px 14px;
-            border-radius: 20px;
-            background: var(--light-green);
-            color: var(--green);
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        h1 {
-            margin: 22px 0 15px;
-            font-size: clamp(34px, 5vw, 52px);
-            line-height: 1.15;
-        }
-
-        h1 span {
-            color: var(--green);
-        }
-
-        .hero p {
-            max-width: 620px;
-            margin: auto;
-            color: var(--muted);
-            font-size: 16px;
-            line-height: 1.7;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 26px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 12px 19px;
-            border: 1px solid var(--green);
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .btn-primary {
-            color: white;
-            background: var(--green);
-        }
-
-        .btn-primary:hover {
-            background: #105437;
-        }
-
-        .btn-secondary {
-            color: var(--green);
-            background: white;
-        }
-
-        .btn-secondary:hover {
-            background: var(--light-green);
-        }
-
-        /* Feature cards */
-        .section {
-            max-width: 1100px;
-            margin: auto;
-            padding: 20px 24px 60px;
-        }
-
-        .section-heading {
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        .section-heading h2 {
-            margin-bottom: 8px;
-            font-size: 27px;
-        }
-
-        .section-heading p {
-            color: var(--muted);
-            font-size: 14px;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 18px;
         }
 
-        .card {
-            display: flex;
-            flex-direction: column;
-            padding: 23px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 13px;
-            box-shadow: 0 4px 15px #1e3c2808;
+        a {
+            color: #247747;
+            text-decoration: none;
         }
 
-        .card-icon {
-            display: grid;
-            place-items: center;
-            width: 45px;
-            height: 45px;
+        nav a {
+            color: #333;
+        }
+
+        nav a:hover {
+            color: #247747;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 70px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 38px;
             margin-bottom: 15px;
-            border-radius: 10px;
-            background: var(--light-green);
-            font-size: 22px;
         }
 
-        .card h3 {
-            margin: 0 0 10px;
-            font-size: 18px;
-        }
-
-        .card p {
-            flex: 1;
-            margin: 0 0 20px;
-            color: var(--muted);
-            font-size: 14px;
+        main p {
+            color: #666;
             line-height: 1.6;
         }
 
-        .card .btn {
-            text-align: center;
+        .buttons {
+            margin: 25px 0 55px;
         }
 
-        /* Footer */
-        footer {
-            padding: 22px;
-            text-align: center;
-            color: var(--muted);
-            background: white;
-            border-top: 1px solid var(--border);
-            font-size: 13px;
-        }
-
-        /* AI chatbot */
-        #ai-launch {
-            position: fixed;
-            right: 22px;
-            bottom: 22px;
-            z-index: 1000;
-            padding: 13px 18px;
-            border: 0;
-            border-radius: 30px;
+        .button {
+            display: inline-block;
+            margin: 5px;
+            padding: 12px 18px;
+            background: #247747;
             color: white;
-            background: var(--green);
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 5px 20px #0002;
+            border-radius: 5px;
         }
 
-        #ai-panel {
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            text-align: left;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border: 1px solid #e2e8e2;
+            border-radius: 7px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+        }
+
+        .card p {
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            border-top: 1px solid #ddd;
+            background: white;
+        }
+
+        /* Chatbot */
+        #chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 17px;
+            border: none;
+            border-radius: 5px;
+            background: #247747;
+            color: white;
+            cursor: pointer;
+        }
+
+        #chatbox {
             display: none;
             position: fixed;
-            right: 22px;
-            bottom: 80px;
-            z-index: 1001;
-            width: min(350px, calc(100vw - 28px));
-            height: 440px;
-            max-height: calc(100vh - 105px);
+            bottom: 75px;
+            right: 20px;
+            width: 300px;
+            height: 380px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 7px;
             overflow: hidden;
-            border: 1px solid var(--border);
-            border-radius: 15px;
-            background: white;
-            box-shadow: 0 10px 35px #0002;
         }
 
-        #ai-head {
+        #chat-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            padding: 14px 16px;
+            align-items: center;
+            padding: 12px;
+            background: #247747;
             color: white;
-            background: var(--green);
         }
 
-        #ai-close {
-            border: 0;
+        #chat-header button {
+            background: none;
             color: white;
-            background: transparent;
-            font-size: 18px;
+            border: none;
             cursor: pointer;
         }
 
-        #ai-messages {
-            height: calc(100% - 125px);
+        #messages {
+            height: 265px;
             overflow-y: auto;
-            padding: 13px;
-            background: #f7faf7;
-        }
-
-        .ai-message {
-            max-width: 88%;
-            margin-bottom: 10px;
-            padding: 10px 12px;
-            border-radius: 12px;
+            padding: 10px;
             font-size: 14px;
-            line-height: 1.5;
-            white-space: pre-wrap;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            background: #f0f3f0;
             overflow-wrap: anywhere;
+            white-space: pre-wrap;
         }
 
-        .ai-bot {
-            border: 1px solid var(--border);
-            background: white;
+        .user-message {
+            background: #e1f2e5;
+            text-align: right;
         }
 
-        .ai-user {
-            margin-left: auto;
-            background: #dff2e5;
-        }
-
-        #ai-form {
+        #chat-form {
             display: flex;
-            gap: 8px;
-            padding: 10px;
-            border-top: 1px solid var(--border);
+            padding: 8px;
+            gap: 5px;
+            border-top: 1px solid #ddd;
         }
 
-        #ai-input {
-            flex: 1;
+        #chat-input {
+            width: 100%;
             min-width: 0;
-            padding: 10px;
-            border: 1px solid #d5ded5;
-            border-radius: 8px;
+            padding: 8px;
+            border: 1px solid #ddd;
         }
 
-        #ai-form button {
-            padding: 0 14px;
-            border: 0;
-            border-radius: 8px;
+        #chat-form button {
+            background: #247747;
             color: white;
-            background: var(--green);
+            border: none;
+            padding: 8px 12px;
             cursor: pointer;
         }
 
-        @media (max-width: 760px) {
-            .navbar {
-                align-items: flex-start;
+        @media (max-width: 600px) {
+            nav {
                 flex-direction: column;
-                padding: 17px 5%;
             }
 
-            .nav-links {
-                gap: 12px;
+            main {
+                margin-top: 40px;
             }
 
-            .hero {
-                padding-top: 45px;
+            h1 {
+                font-size: 30px;
             }
 
-            .cards {
-                grid-template-columns: 1fr;
+            #chatbox {
+                right: 10px;
+                width: calc(100% - 20px);
+                max-width: 300px;
             }
         }
     </style>
@@ -342,174 +217,154 @@
 
 <body>
 
-    <nav class="navbar">
-        <div class="logo">🍱 Food Harvest <span>AI</span></div>
+    <nav>
+        <strong>Food Harvest AI</strong>
 
-        <div class="nav-links">
+        <div>
             <a href="/">Home</a>
             <a href="/donate">Donate Food</a>
             <a href="/matching">NGO Matching</a>
-            <a href="/orders">Manage Orders</a>
+            <a href="/orders">Orders</a>
             <a href="/dashboard">Dashboard</a>
-            <a href="/delivery-partner">Delivery Partner</a>
         </div>
     </nav>
 
     <main>
-        <section class="hero">
-            <span class="badge">AI-Powered Food Redistribution</span>
+        <h1>Reduce Food Waste, Share More Meals</h1>
 
-            <h1>
-                Reduce Food Waste.<br>
-                <span>Share More Meals.</span>
-            </h1>
+        <p>
+            Food Harvest AI connects restaurants with surplus food
+            to NGOs that need it, helping communities access food
+            while reducing waste.
+        </p>
 
-            <p>
-                Connect surplus food from restaurants with NGOs that need it.
-                Manage donations, match recipients, and follow deliveries
-                in one simple place.
-            </p>
+        <div class="buttons">
+            <a class="button" href="/donate">Donate Food</a>
+            <a class="button" href="/matching">Find an NGO</a>
+        </div>
 
-            <div class="actions">
-                <a class="btn btn-primary" href="/donate">Donate Food</a>
-                <a class="btn btn-secondary" href="/matching">Find an NGO</a>
-            </div>
-        </section>
-
-        <section class="section">
-            <div class="section-heading">
-                <h2>Your Food Redistribution Workflow</h2>
-                <p>Choose a feature to get started.</p>
+        <section class="features">
+            <div class="card">
+                <h3>Donate Food</h3>
+                <p>Register surplus food and provide pickup details.</p>
+                <a href="/donate">Create Donation →</a>
             </div>
 
-            <div class="cards">
-                <article class="card">
-                    <div class="card-icon">🍱</div>
-                    <h3>Donate Food</h3>
-                    <p>
-                        Register surplus food, quantity, and pickup details
-                        to start a donation.
-                    </p>
-                    <a class="btn btn-primary" href="/donate">
-                        Create Donation
-                    </a>
-                </article>
+            <div class="card">
+                <h3>NGO Matching</h3>
+                <p>Find suitable NGOs for available food donations.</p>
+                <a href="/matching">Find NGOs →</a>
+            </div>
 
-                <article class="card">
-                    <div class="card-icon">🤝</div>
-                    <h3>Match with an NGO</h3>
-                    <p>
-                        Find suitable NGOs for a donation and create an order
-                        with your chosen recipient.
-                    </p>
-                    <a class="btn btn-secondary" href="/matching">
-                        Find NGOs
-                    </a>
-                </article>
-
-                <article class="card">
-                    <div class="card-icon">📦</div>
-                    <h3>Manage Orders</h3>
-                    <p>
-                        View order details and update progress using an
-                        existing order ID.
-                    </p>
-                    <a class="btn btn-primary" href="/orders">
-                        Open Orders
-                    </a>
-                </article>
+            <div class="card">
+                <h3>Manage Orders</h3>
+                <p>Review orders and monitor their delivery status.</p>
+                <a href="/orders">View Orders →</a>
             </div>
         </section>
     </main>
 
     <footer>
-        Food Harvest AI © 2026 · Reducing food waste, one meal at a time.
+        Food Harvest AI © 2026
     </footer>
 
-    <button id="ai-launch" type="button">✦ Ask Food AI</button>
+    <!-- Chatbot -->
+    <button id="chat-button" type="button">Ask Food AI</button>
 
-    <section id="ai-panel" aria-label="Food Harvest AI Assistant">
-        <header id="ai-head">
-            <div>
-                <strong>Food Harvest AI</strong><br>
-                <small>Donation assistant</small>
-            </div>
-            <button id="ai-close" type="button" aria-label="Close chat">✕</button>
-        </header>
+    <section id="chatbox">
+        <div id="chat-header">
+            <strong>Food Harvest AI Assistant</strong>
+            <button id="close-chat" type="button">✕</button>
+        </div>
 
-        <div id="ai-messages" aria-live="polite">
-            <div class="ai-message ai-bot">
-                Hi! I can help with donations, NGO matching, orders,
-                and delivery tracking. What would you like to know?
+        <div id="messages">
+            <div class="message">
+                Hello! Ask me about food donations, NGO matching, or orders.
             </div>
         </div>
 
-        <form id="ai-form">
-            <input id="ai-input" maxlength="1000"
-                   placeholder="Ask a question..." autocomplete="off" required>
+        <form id="chat-form">
+            <input
+                id="chat-input"
+                type="text"
+                placeholder="Type a message..."
+                maxlength="1000"
+                autocomplete="off"
+                required
+            >
             <button type="submit">Send</button>
         </form>
     </section>
 
     <script>
-        const panel = document.getElementById("ai-panel");
-        const messages = document.getElementById("ai-messages");
-        const input = document.getElementById("ai-input");
-        const form = document.getElementById("ai-form");
-        const sendButton = form.querySelector("button");
+        const chatbox = document.getElementById("chatbox");
+        const messages = document.getElementById("messages");
+        const chatInput = document.getElementById("chat-input");
+        const chatForm = document.getElementById("chat-form");
+        const sendButton = chatForm.querySelector("button");
 
-        document.getElementById("ai-launch").addEventListener("click", () => {
-            panel.style.display = "block";
-            input.focus();
-        });
+        document.getElementById("chat-button").onclick = () => {
+            chatbox.style.display = "block";
+            chatInput.focus();
+        };
 
-        document.getElementById("ai-close").addEventListener("click", () => {
-            panel.style.display = "none";
-        });
+        document.getElementById("close-chat").onclick = () => {
+            chatbox.style.display = "none";
+        };
 
-        function addMessage(text, type) {
-            const bubble = document.createElement("div");
-            bubble.className = "ai-message " + type;
-            bubble.textContent = text;
-            messages.appendChild(bubble);
+        function addMessage(text, isUser = false) {
+            const message = document.createElement("div");
+            message.className = "message" +
+                (isUser ? " user-message" : "");
+
+            message.textContent = text;
+            messages.appendChild(message);
             messages.scrollTop = messages.scrollHeight;
-            return bubble;
+
+            return message;
         }
 
-        form.addEventListener("submit", async (event) => {
+        chatForm.addEventListener("submit", async (event) => {
             event.preventDefault();
 
-            const question = input.value.trim();
+            const question = chatInput.value.trim();
+
             if (!question || sendButton.disabled) return;
 
-            addMessage(question, "ai-user");
-            input.value = "";
+            addMessage(question, true);
+            chatInput.value = "";
             sendButton.disabled = true;
 
-            const replyBubble = addMessage("Thinking...", "ai-bot");
+            const reply = addMessage("Thinking...");
 
             try {
                 const response = await fetch("/api/ai-chat", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: question })
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: question
+                    })
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || "Request failed");
+                    throw new Error(
+                        data.message || "Unable to get a response."
+                    );
                 }
 
-                replyBubble.textContent =
-                    data.reply || "I couldn't generate a response.";
+                reply.textContent =
+                    data.reply || "No response received.";
 
             } catch (error) {
-                replyBubble.textContent =
-                    error.message || "Could not connect to the assistant.";
+                reply.textContent =
+                    error.message || "Could not connect to the AI assistant.";
             } finally {
                 sendButton.disabled = false;
-                input.focus();
+                chatInput.focus();
             }
         });
     </script>
