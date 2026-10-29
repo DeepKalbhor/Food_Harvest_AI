@@ -1,15 +1,22 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Food Harvest AI</title>
 
     <link rel="stylesheet" href="/css/style.css">
 
     <style>
+        :root {
+            --green: #176b45;
+            --light-green: #e8f5ec;
+            --text: #26352b;
+            --muted: #68766c;
+            --border: #e2eae3;
+        }
+
         * {
             box-sizing: border-box;
         }
@@ -17,17 +24,24 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #f7f9f7;
-            color: #243329;
+            color: var(--text);
+            background: #f6f9f6;
         }
 
+        a {
+            text-decoration: none;
+        }
+
+        /* Navigation */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 18px 7%;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 18px 6%;
             background: white;
-            border-bottom: 1px solid #e5ebe5;
+            border-bottom: 1px solid var(--border);
         }
 
         .logo {
@@ -36,31 +50,30 @@
         }
 
         .logo span {
-            color: #29965b;
+            color: var(--green);
         }
 
         .nav-links {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
+            gap: 16px;
         }
 
         .nav-links a {
-            color: #35473a;
-            text-decoration: none;
+            color: var(--text);
             font-size: 14px;
             font-weight: 600;
         }
 
         .nav-links a:hover {
-            color: #29965b;
+            color: var(--green);
         }
 
+        /* Hero */
         .hero {
-            max-width: 1100px;
+            max-width: 1050px;
             margin: auto;
-            padding: 75px 24px 45px;
+            padding: 65px 24px 45px;
             text-align: center;
         }
 
@@ -68,27 +81,27 @@
             display: inline-block;
             padding: 8px 14px;
             border-radius: 20px;
-            background: #e5f6e9;
-            color: #237a45;
+            background: var(--light-green);
+            color: var(--green);
             font-size: 13px;
             font-weight: bold;
         }
 
         h1 {
             margin: 22px 0 15px;
-            font-size: clamp(34px, 5vw, 54px);
+            font-size: clamp(34px, 5vw, 52px);
             line-height: 1.15;
         }
 
         h1 span {
-            color: #29965b;
+            color: var(--green);
         }
 
-        .hero-description {
+        .hero p {
             max-width: 620px;
-            margin: 0 auto;
-            color: #66736a;
-            font-size: 17px;
+            margin: auto;
+            color: var(--muted);
+            font-size: 16px;
             line-height: 1.7;
         }
 
@@ -96,43 +109,43 @@
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 14px;
-            margin-top: 30px;
+            gap: 12px;
+            margin-top: 26px;
         }
 
         .btn {
             display: inline-block;
-            padding: 13px 22px;
+            padding: 12px 19px;
+            border: 1px solid var(--green);
             border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
             font-size: 14px;
+            font-weight: bold;
             transition: 0.2s;
         }
 
         .btn-primary {
-            background: #29965b;
             color: white;
+            background: var(--green);
         }
 
         .btn-primary:hover {
-            background: #207a48;
+            background: #105437;
         }
 
         .btn-secondary {
+            color: var(--green);
             background: white;
-            color: #29965b;
-            border: 1px solid #cfe5d5;
         }
 
         .btn-secondary:hover {
-            background: #edf8f0;
+            background: var(--light-green);
         }
 
+        /* Feature cards */
         .section {
             max-width: 1100px;
-            margin: 0 auto;
-            padding: 25px 24px 65px;
+            margin: auto;
+            padding: 20px 24px 60px;
         }
 
         .section-heading {
@@ -146,47 +159,46 @@
         }
 
         .section-heading p {
-            color: #718076;
+            color: var(--muted);
             font-size: 14px;
         }
 
         .cards {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 20px;
+            gap: 18px;
         }
 
         .card {
             display: flex;
             flex-direction: column;
-            padding: 25px;
+            padding: 23px;
             background: white;
-            border: 1px solid #e5ebe5;
+            border: 1px solid var(--border);
             border-radius: 13px;
-            box-shadow: 0 4px 15px rgba(30, 60, 40, 0.04);
+            box-shadow: 0 4px 15px #1e3c2808;
         }
 
         .card-icon {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 48px;
-            height: 48px;
-            margin-bottom: 17px;
+            display: grid;
+            place-items: center;
+            width: 45px;
+            height: 45px;
+            margin-bottom: 15px;
             border-radius: 10px;
-            background: #e9f7ed;
-            font-size: 24px;
+            background: var(--light-green);
+            font-size: 22px;
         }
 
         .card h3 {
             margin: 0 0 10px;
-            font-size: 19px;
+            font-size: 18px;
         }
 
         .card p {
-            flex-grow: 1;
-            margin: 0 0 22px;
-            color: #6b786e;
+            flex: 1;
+            margin: 0 0 20px;
+            color: var(--muted);
             font-size: 14px;
             line-height: 1.6;
         }
@@ -195,29 +207,130 @@
             text-align: center;
         }
 
+        /* Footer */
         footer {
             padding: 22px;
             text-align: center;
+            color: var(--muted);
             background: white;
-            border-top: 1px solid #e5ebe5;
-            color: #78847b;
+            border-top: 1px solid var(--border);
             font-size: 13px;
         }
 
-        @media (max-width: 750px) {
+        /* AI chatbot */
+        #ai-launch {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 1000;
+            padding: 13px 18px;
+            border: 0;
+            border-radius: 30px;
+            color: white;
+            background: var(--green);
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px #0002;
+        }
+
+        #ai-panel {
+            display: none;
+            position: fixed;
+            right: 22px;
+            bottom: 80px;
+            z-index: 1001;
+            width: min(350px, calc(100vw - 28px));
+            height: 440px;
+            max-height: calc(100vh - 105px);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 10px 35px #0002;
+        }
+
+        #ai-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            color: white;
+            background: var(--green);
+        }
+
+        #ai-close {
+            border: 0;
+            color: white;
+            background: transparent;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #ai-messages {
+            height: calc(100% - 125px);
+            overflow-y: auto;
+            padding: 13px;
+            background: #f7faf7;
+        }
+
+        .ai-message {
+            max-width: 88%;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .ai-bot {
+            border: 1px solid var(--border);
+            background: white;
+        }
+
+        .ai-user {
+            margin-left: auto;
+            background: #dff2e5;
+        }
+
+        #ai-form {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        #ai-input {
+            flex: 1;
+            min-width: 0;
+            padding: 10px;
+            border: 1px solid #d5ded5;
+            border-radius: 8px;
+        }
+
+        #ai-form button {
+            padding: 0 14px;
+            border: 0;
+            border-radius: 8px;
+            color: white;
+            background: var(--green);
+            cursor: pointer;
+        }
+
+        @media (max-width: 760px) {
             .navbar {
                 align-items: flex-start;
-                gap: 16px;
                 flex-direction: column;
-                padding: 18px 5%;
+                padding: 17px 5%;
             }
 
             .nav-links {
-                gap: 15px;
+                gap: 12px;
             }
 
             .hero {
-                padding-top: 50px;
+                padding-top: 45px;
             }
 
             .cards {
@@ -229,270 +342,177 @@
 
 <body>
 
-    <!-- NAVIGATION -->
     <nav class="navbar">
-        <div class="logo">
-            🍱 Food Harvest <span>AI</span>
-        </div>
+        <div class="logo">🍱 Food Harvest <span>AI</span></div>
 
         <div class="nav-links">
             <a href="/">Home</a>
             <a href="/donate">Donate Food</a>
             <a href="/matching">NGO Matching</a>
             <a href="/orders">Manage Orders</a>
-            <a href="/dashboard">Dashboard & Reports</a>
+            <a href="/dashboard">Dashboard</a>
             <a href="/delivery-partner">Delivery Partner</a>
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
     <main>
         <section class="hero">
-            <div class="badge">AI-Powered Food Redistribution</div>
+            <span class="badge">AI-Powered Food Redistribution</span>
 
             <h1>
                 Reduce Food Waste.<br>
                 <span>Share More Meals.</span>
             </h1>
 
-            <p class="hero-description">
-                Food Harvest AI connects surplus food donors with NGOs
-                to help redistribute food efficiently and reduce waste.
+            <p>
+                Connect surplus food from restaurants with NGOs that need it.
+                Manage donations, match recipients, and follow deliveries
+                in one simple place.
             </p>
 
-          
+            <div class="actions">
+                <a class="btn btn-primary" href="/donate">Donate Food</a>
+                <a class="btn btn-secondary" href="/matching">Find an NGO</a>
+            </div>
         </section>
 
-        <!-- MAIN FEATURES -->
         <section class="section">
             <div class="section-heading">
-                <h2>Manage Your Workflow</h2>
-                <p>Access the main features of Food Harvest AI.</p>
+                <h2>Your Food Redistribution Workflow</h2>
+                <p>Choose a feature to get started.</p>
             </div>
 
             <div class="cards">
-
-                <!-- DONATE FOOD -->
                 <article class="card">
                     <div class="card-icon">🍱</div>
-
                     <h3>Donate Food</h3>
-
                     <p>
-                        Register surplus food, enter its quantity and
-                        provide the pickup location to begin redistribution.
+                        Register surplus food, quantity, and pickup details
+                        to start a donation.
                     </p>
-
-                    <a href="/donate" class="btn btn-primary">
-                        Donate Food
+                    <a class="btn btn-primary" href="/donate">
+                        Create Donation
                     </a>
                 </article>
 
-                <!-- NGO MATCHING -->
                 <article class="card">
                     <div class="card-icon">🤝</div>
-
-                    <h3>NGO Matching</h3>
-
+                    <h3>Match with an NGO</h3>
                     <p>
-                        View suitable NGOs for a food donation and create
-                        an order with your selected NGO.
+                        Find suitable NGOs for a donation and create an order
+                        with your chosen recipient.
                     </p>
-
-                    <a href="/matching" class="btn btn-secondary">
+                    <a class="btn btn-secondary" href="/matching">
                         Find NGOs
                     </a>
                 </article>
 
-                <!-- ORDER MANAGEMENT -->
                 <article class="card">
                     <div class="card-icon">📦</div>
-
                     <h3>Manage Orders</h3>
-
                     <p>
-                        Enter an existing order ID, update its status
-                        and check the latest order progress.
+                        View order details and update progress using an
+                        existing order ID.
                     </p>
-
-                    <a href="/orders" class="btn btn-primary">
+                    <a class="btn btn-primary" href="/orders">
                         Open Orders
                     </a>
                 </article>
-
             </div>
         </section>
     </main>
 
-    <!-- FOOTER -->
     <footer>
-        Food Harvest AI &copy; 2026 |
-        Reducing food waste, one meal at a time.
+        Food Harvest AI © 2026 · Reducing food waste, one meal at a time.
     </footer>
 
-<style>
-#ai-launch {
-    position: fixed;
-    right: 24px;
-    bottom: 24px;
-    z-index: 1000;
-    border: 0;
-    border-radius: 50px;
-    background: #176b45;
-    color: white;
-    padding: 15px 21px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 25px #0002;
-}
-#ai-panel {
-    display: none;
-    position: fixed;
-    right: 24px;
-    bottom: 88px;
-    z-index: 1001;
-    width: min(360px, calc(100vw - 32px));
-    height: 460px;
-    max-height: calc(100vh - 120px);
-    background: white;
-    border: 1px solid #e2e8e2;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 12px 45px #0002;
-    font-family: Arial, sans-serif;
-}
-#ai-head {
-    background: #176b45;
-    color: white;
-    padding: 17px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-#ai-messages {
-    height: calc(100% - 135px);
-    overflow-y: auto;
-    padding: 14px;
-    background: #f7faf7;
-}
-.ai-message {
-    padding: 11px 13px;
-    border-radius: 13px;
-    margin-bottom: 10px;
-    max-width: 88%;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font-size: 14px;
-    line-height: 1.5;
-}
-.ai-bot { background: white; border: 1px solid #e3e9e3; }
-.ai-user { background: #dff4e6; margin-left: auto; }
-#ai-form {
-    display: flex;
-    gap: 8px;
-    padding: 10px;
-    border-top: 1px solid #e6ebe6;
-}
-#ai-input {
-    min-width: 0;
-    flex: 1;
-    padding: 11px;
-    border: 1px solid #d5ded5;
-    border-radius: 10px;
-}
-#ai-form button {
-    background: #176b45;
-    color: white;
-    border: 0;
-    border-radius: 10px;
-    padding: 0 15px;
-    cursor: pointer;
-}
-</style>
+    <button id="ai-launch" type="button">✦ Ask Food AI</button>
 
-<button id="ai-launch" type="button">✦ Ask Food AI</button>
+    <section id="ai-panel" aria-label="Food Harvest AI Assistant">
+        <header id="ai-head">
+            <div>
+                <strong>Food Harvest AI</strong><br>
+                <small>Donation assistant</small>
+            </div>
+            <button id="ai-close" type="button" aria-label="Close chat">✕</button>
+        </header>
 
-<section id="ai-panel" aria-label="Food Harvest AI Assistant">
-    <header id="ai-head">
-        <div>
-            <strong>Food Harvest AI</strong><br>
-            <small>Your food donation assistant</small>
+        <div id="ai-messages" aria-live="polite">
+            <div class="ai-message ai-bot">
+                Hi! I can help with donations, NGO matching, orders,
+                and delivery tracking. What would you like to know?
+            </div>
         </div>
-        <button id="ai-close" type="button"
-            aria-label="Close chat">✕</button>
-    </header>
 
-    <div id="ai-messages" aria-live="polite">
-        <div class="ai-message ai-bot">
-            Hi! 👋 I can help you understand food donations,
-            NGO matching, orders and delivery tracking.
-            What would you like to know?
-        </div>
-    </div>
+        <form id="ai-form">
+            <input id="ai-input" maxlength="1000"
+                   placeholder="Ask a question..." autocomplete="off" required>
+            <button type="submit">Send</button>
+        </form>
+    </section>
 
-    <form id="ai-form">
-        <input id="ai-input" maxlength="1000"
-            placeholder="Ask me anything..." autocomplete="off"
-            required>
-        <button type="submit">Send</button>
-    </form>
-</section>
+    <script>
+        const panel = document.getElementById("ai-panel");
+        const messages = document.getElementById("ai-messages");
+        const input = document.getElementById("ai-input");
+        const form = document.getElementById("ai-form");
+        const sendButton = form.querySelector("button");
 
-<script>
-const aiPanel = document.getElementById("ai-panel");
-const aiMessages = document.getElementById("ai-messages");
-const aiInput = document.getElementById("ai-input");
-
-document.getElementById("ai-launch").onclick = () => {
-    aiPanel.style.display = "block";
-    aiInput.focus();
-};
-
-document.getElementById("ai-close").onclick = () => {
-    aiPanel.style.display = "none";
-};
-
-function addAIMessage(message, type) {
-    const bubble = document.createElement("div");
-    bubble.className = "ai-message " + type;
-    bubble.textContent = message;
-    aiMessages.appendChild(bubble);
-    aiMessages.scrollTop = aiMessages.scrollHeight;
-    return bubble;
-}
-
-document.getElementById("ai-form").onsubmit = async (event) => {
-    event.preventDefault();
-
-    const message = aiInput.value.trim();
-    if (!message) return;
-
-    addAIMessage(message, "ai-user");
-    aiInput.value = "";
-
-    const waiting = addAIMessage("Thinking...", "ai-bot");
-
-    try {
-        const response = await fetch("/api/ai-chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message })
+        document.getElementById("ai-launch").addEventListener("click", () => {
+            panel.style.display = "block";
+            input.focus();
         });
 
-        const data = await response.json();
+        document.getElementById("ai-close").addEventListener("click", () => {
+            panel.style.display = "none";
+        });
 
-        if (!response.ok) {
-            throw new Error(data.message || "Request failed");
+        function addMessage(text, type) {
+            const bubble = document.createElement("div");
+            bubble.className = "ai-message " + type;
+            bubble.textContent = text;
+            messages.appendChild(bubble);
+            messages.scrollTop = messages.scrollHeight;
+            return bubble;
         }
 
-        waiting.textContent = data.reply;
-    } catch (error) {
-        waiting.textContent =
-            error.message || "Could not connect to the assistant.";
-    }
-};
-</script>
-</body>
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const question = input.value.trim();
+            if (!question || sendButton.disabled) return;
+
+            addMessage(question, "ai-user");
+            input.value = "";
+            sendButton.disabled = true;
+
+            const replyBubble = addMessage("Thinking...", "ai-bot");
+
+            try {
+                const response = await fetch("/api/ai-chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: question })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Request failed");
+                }
+
+                replyBubble.textContent =
+                    data.reply || "I couldn't generate a response.";
+
+            } catch (error) {
+                replyBubble.textContent =
+                    error.message || "Could not connect to the assistant.";
+            } finally {
+                sendButton.disabled = false;
+                input.focus();
+            }
+        });
+    </script>
 
 </body>
 </html>
