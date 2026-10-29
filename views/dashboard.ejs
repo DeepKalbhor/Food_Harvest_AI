@@ -1,154 +1,551 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard & Reports</title>
+    <title>Food Harvest AI | Dashboard</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
+            margin: 0;
             font-family: Arial, sans-serif;
-            background: #f5f8f5;
-            color: #26352b;
+            background: #f4f7f4;
+            color: #24352a;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 22px 5%;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+        }
+
+        header p {
+            margin: 0;
+            color: #dcefe3;
+        }
+
+        nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            padding: 16px 5%;
+            background: white;
+            border-bottom: 1px solid #e0e8e0;
+        }
+
+        nav a {
+            color: #176b45;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        main {
+            max-width: 1250px;
+            margin: auto;
             padding: 25px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .toolbar h2 {
             margin: 0;
         }
-        main { max-width: 1000px; margin: auto; }
-        nav { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 30px; }
-        a { color: #23834b; text-decoration: none; }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 17px;
+            background: #176b45;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #105437;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 17px;
+            margin-bottom: 25px;
         }
+
         .card {
             background: white;
+            border: 1px solid #e3eae3;
+            border-radius: 13px;
             padding: 22px;
-            border: 1px solid #e0e8e0;
-            border-radius: 10px;
+            box-shadow: 0 3px 12px #00000008;
         }
-        .number { font-size: 30px; font-weight: bold; margin-top: 12px; }
-        .muted { color: #68756b; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5eae5; }
-        button { padding: 10px 15px; cursor: pointer; }
-        .table-wrap { overflow-x: auto; }
+
+        .card-label {
+            color: #68766c;
+            font-size: 14px;
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 12px 0 5px;
+            color: #176b45;
+        }
+
+        .card small {
+            color: #7a857d;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .chart-card {
+            min-width: 0;
+            background: white;
+            padding: 22px;
+            border: 1px solid #e3eae3;
+            border-radius: 13px;
+            box-shadow: 0 3px 12px #00000008;
+        }
+
+        .chart-card h3 {
+            margin: 0 0 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .table-card {
+            background: white;
+            border: 1px solid #e3eae3;
+            border-radius: 13px;
+            padding: 22px;
+            overflow: hidden;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #edf0ed;
+        }
+
+        th {
+            color: #526257;
+            background: #f7faf7;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #e6f4ea;
+            color: #176b45;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #b42318;
+        }
+
+        .muted {
+            color: #68766c;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #68766c;
+        }
+
+        @media (max-width: 750px) {
+            main {
+                padding: 16px;
+            }
+
+            .charts {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+        }
     </style>
 </head>
 
 <body>
+
+<header>
+    <h1>🌱 Food Harvest AI</h1>
+    <p>Dashboard & Reports — Food donation and delivery overview</p>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/donate">Donate Food</a>
+    <a href="/matching">NGO Matching</a>
+    <a href="/orders">Manage Orders</a>
+</nav>
+
 <main>
-    <nav>
-        <a href="/">Home</a>
-        <a href="/donate">Donate Food</a>
-        <a href="/matching">NGO Matching</a>
-        <a href="/orders">Manage Orders</a>
-    </nav>
 
-    <h1>Dashboard & Reports</h1>
-    <p class="muted">Live overview of Food Harvest AI</p>
+    <div class="toolbar">
+        <div>
+            <h2>Dashboard Overview</h2>
+            <p class="muted" id="lastUpdated">Loading dashboard data...</p>
+        </div>
 
-    <div class="cards">
+        <button id="refreshButton" onclick="loadDashboard()">
+            ↻ Refresh Dashboard
+        </button>
+    </div>
+
+    <!-- Summary cards -->
+    <section class="cards">
+
         <div class="card">
-            Total Donations
+            <div class="card-label">Total Donations</div>
             <div class="number" id="donations">—</div>
+            <small>All recorded donations</small>
         </div>
+
         <div class="card">
-            Available Donations
+            <div class="card-label">Available Donations</div>
             <div class="number" id="available">—</div>
+            <small>Ready for NGO matching</small>
         </div>
+
         <div class="card">
-            Total Orders
+            <div class="card-label">Total Orders</div>
             <div class="number" id="orders">—</div>
+            <small>Orders created</small>
         </div>
+
         <div class="card">
-            Delivered Orders
+            <div class="card-label">Delivered Orders</div>
             <div class="number" id="delivered">—</div>
+            <small>Successfully delivered</small>
         </div>
+
         <div class="card">
-            Cancelled Orders
+            <div class="card-label">Cancelled Orders</div>
             <div class="number" id="cancelled">—</div>
+            <small>Cancelled orders</small>
         </div>
-    </div>
 
-    <h2>Recent Orders</h2>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                </tr>
-            </thead>
-            <tbody id="recent">
-                <tr><td colspan="3">Loading...</td></tr>
-            </tbody>
-        </table>
-    </div>
+    </section>
 
-    <p id="message" class="muted"></p>
-    <button onclick="loadDashboard()">Refresh</button>
+    <!-- Charts -->
+    <section class="charts">
+
+        <div class="chart-card">
+            <h3>📊 Donations Overview</h3>
+            <div class="chart-container">
+                <canvas id="donationChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3>📦 Order Status Distribution</h3>
+            <div class="chart-container">
+                <canvas id="orderChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3>📈 Donations vs Orders</h3>
+            <div class="chart-container">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3>🚚 Order Progress</h3>
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Recent orders -->
+    <section class="table-card">
+        <h3>📋 Recent Orders</h3>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+
+                <tbody id="recent">
+                    <tr>
+                        <td colspan="3">Loading orders...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p id="message" class="muted" role="status"></p>
+    </section>
+
 </main>
 
+<footer>
+    Food Harvest AI | Reducing food waste, one donation at a time 🌍
+</footer>
+
 <script>
+let donationChart;
+let orderChart;
+let comparisonChart;
+let progressChart;
+
+function makeChart(canvasId, type, labels, values, label) {
+    return new Chart(document.getElementById(canvasId), {
+        type,
+        data: {
+            labels,
+            datasets: [{
+                label,
+                data: values,
+                backgroundColor: [
+                    "#23834b",
+                    "#78bd91",
+                    "#f0b44d",
+                    "#df7770",
+                    "#6895d2",
+                    "#9a83c7",
+                    "#55b8b0"
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: type === "doughnut" || type === "pie",
+                    position: "bottom"
+                }
+            },
+            scales: ["bar", "line"].includes(type) ? {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            } : {}
+        }
+    });
+}
+
+function updateChart(chart, labels, values) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = values;
+    chart.update();
+}
+
 async function loadDashboard() {
+    const button = document.getElementById("refreshButton");
     const message = document.getElementById("message");
 
+    button.disabled = true;
+    button.textContent = "Loading...";
+    message.textContent = "";
+
     try {
-        const response = await fetch("/api/dashboard");
+        const response = await fetch("/api/dashboard", {
+            cache: "no-store"
+        });
+
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || "Could not load data");
+            throw new Error(data.message || "Unable to load dashboard");
         }
 
-        document.getElementById("donations").textContent =
-            data.donations.total ?? 0;
+        const donations = data.donations || {};
+        const orders = data.orders || {};
+        const recent = Array.isArray(data.recent) ? data.recent : [];
 
-        document.getElementById("available").textContent =
-            data.donations.available ?? 0;
+        const totalDonations = Number(donations.total) || 0;
+        const availableDonations = Number(donations.available) || 0;
+        const totalOrders = Number(orders.total) || 0;
+        const deliveredOrders = Number(orders.delivered) || 0;
+        const cancelledOrders = Number(orders.cancelled) || 0;
 
-        document.getElementById("orders").textContent =
-            data.orders.total ?? 0;
+        document.getElementById("donations").textContent = totalDonations;
+        document.getElementById("available").textContent = availableDonations;
+        document.getElementById("orders").textContent = totalOrders;
+        document.getElementById("delivered").textContent = deliveredOrders;
+        document.getElementById("cancelled").textContent = cancelledOrders;
 
-        document.getElementById("delivered").textContent =
-            data.orders.delivered ?? 0;
+        const otherDonations = Math.max(
+            0, totalDonations - availableDonations
+        );
 
-        document.getElementById("cancelled").textContent =
-            data.orders.cancelled ?? 0;
+        const activeOrders = Math.max(
+            0, totalOrders - deliveredOrders - cancelledOrders
+        );
 
+        // Create charts once; update them on subsequent refreshes.
+        if (!donationChart) {
+            donationChart = makeChart(
+                "donationChart",
+                "doughnut",
+                ["Available", "Other statuses"],
+                [availableDonations, otherDonations],
+                "Donations"
+            );
+
+            orderChart = makeChart(
+                "orderChart",
+                "doughnut",
+                ["Delivered", "Cancelled", "Active"],
+                [deliveredOrders, cancelledOrders, activeOrders],
+                "Orders"
+            );
+
+            comparisonChart = makeChart(
+                "comparisonChart",
+                "bar",
+                ["Donations", "Orders"],
+                [totalDonations, totalOrders],
+                "Total"
+            );
+
+            progressChart = makeChart(
+                "progressChart",
+                "bar",
+                ["Delivered", "Active", "Cancelled"],
+                [deliveredOrders, activeOrders, cancelledOrders],
+                "Number of orders"
+            );
+        } else {
+            updateChart(
+                donationChart,
+                ["Available", "Other statuses"],
+                [availableDonations, otherDonations]
+            );
+
+            updateChart(
+                orderChart,
+                ["Delivered", "Cancelled", "Active"],
+                [deliveredOrders, cancelledOrders, activeOrders]
+            );
+
+            updateChart(
+                comparisonChart,
+                ["Donations", "Orders"],
+                [totalDonations, totalOrders]
+            );
+
+            updateChart(
+                progressChart,
+                ["Delivered", "Active", "Cancelled"],
+                [deliveredOrders, activeOrders, cancelledOrders]
+            );
+        }
+
+        // Safely display recent orders.
         const table = document.getElementById("recent");
         table.replaceChildren();
 
-        if (data.recent.length === 0) {
+        if (recent.length === 0) {
             const row = table.insertRow();
             const cell = row.insertCell();
             cell.colSpan = 3;
-            cell.textContent = "No orders yet.";
+            cell.textContent = "No orders found.";
         } else {
-            data.recent.forEach(order => {
+            recent.forEach(order => {
                 const row = table.insertRow();
 
-                [order.order_id, order.order_status,
-                 order.created_at
+                const idCell = row.insertCell();
+                idCell.textContent = order.order_id ?? "—";
+
+                const statusCell = row.insertCell();
+                const badge = document.createElement("span");
+                badge.className = "status";
+                badge.textContent = order.order_status ?? "Unknown";
+                statusCell.appendChild(badge);
+
+                const dateCell = row.insertCell();
+                dateCell.textContent = order.created_at
                     ? new Date(order.created_at).toLocaleString()
-                    : "—"
-                ].forEach(value => {
-                    const cell = row.insertCell();
-                    cell.textContent = value ?? "—";
-                });
+                    : "—";
             });
         }
 
-        message.textContent = "Dashboard updated.";
+        document.getElementById("lastUpdated").textContent =
+            "Last updated: " + new Date().toLocaleString();
+
+        message.textContent = "Dashboard loaded successfully.";
+
     } catch (error) {
-        message.textContent = error.message;
+        console.error("Dashboard error:", error);
+
+        message.textContent =
+            "Could not load dashboard data: " + error.message;
+        message.className = "error";
+    } finally {
+        button.disabled = false;
+        button.textContent = "↻ Refresh Dashboard";
     }
 }
 
 loadDashboard();
 </script>
+
 </body>
 </html>
