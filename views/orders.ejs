@@ -1,43 +1,334 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Manage Orders</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Orders | Food Harvest AI</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f3f7f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #26352b;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #176b3a, #2e9955);
+            color: white;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 19px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #7b897e;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 9px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #dce5dd;
+            border-radius: 10px;
+            outline: none;
+            font-size: 14px;
+            background: #fbfdfb;
+            transition: 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: #269653;
+            box-shadow: 0 0 0 3px rgba(38, 150, 83, 0.12);
+        }
+
+        .status-preview {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f0f7f1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            background: #d9f2df;
+            color: #176b3a;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #218747;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        button:hover {
+            background: #176b3a;
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            display: none;
+            margin-top: 20px;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .success {
+            display: block;
+            background: #e8f7ed;
+            color: #176b3a;
+            border: 1px solid #bce5c8;
+        }
+
+        .error {
+            display: block;
+            background: #fff0ef;
+            color: #b42318;
+            border: 1px solid #f5c2be;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 18px;
+            border-top: 1px solid #edf1ed;
+            color: #89948b;
+            font-size: 12px;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 500px) {
+            .header, .content {
+                padding: 22px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h2>Update Order Status</h2>
 
-    <input id="orderId" placeholder="Enter Order ID">
+<div class="container">
 
-    <select id="status">
-        <option>Created</option>
-        <option>Accepted</option>
-        <option>Driver Assigned</option>
-        <option>Picked Up</option>
-        <option>In Transit</option>
-        <option>Delivered</option>
-        <option>Cancelled</option>
-    </select>
+    <div class="header">
+        <h1>📦 Manage Orders</h1>
+        <p>Update and manage food donation delivery status.</p>
+    </div>
 
-    <button onclick="updateStatus()">Update</button>
+    <div class="content">
 
-    <p id="message"></p>
+        <h2 class="section-title">Update Order Status</h2>
+        <p class="subtitle">
+            Enter an order ID and select its latest delivery status.
+        </p>
 
-    <script>
-        async function updateStatus() {
+        <form id="orderForm">
+
+            <div class="form-group">
+                <label for="orderId">Order ID</label>
+                <input
+                    type="text"
+                    id="orderId"
+                    placeholder="e.g. ORD1001"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="status">Select Order Status</label>
+
+                <select id="status" required>
+                    <option value="Created">Created</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Driver Assigned">Driver Assigned</option>
+                    <option value="Picked Up">Picked Up</option>
+                    <option value="In Transit">In Transit</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+
+                <div class="status-preview">
+                    <span>Selected status</span>
+                    <span class="status-badge" id="statusPreview">
+                        Created
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" id="updateButton">
+                Update Order Status
+            </button>
+
+        </form>
+
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+
+    </div>
+
+    <div class="footer">
+        Food Harvest AI · Order Management System
+    </div>
+
+</div>
+
+<script>
+    const form = document.getElementById("orderForm");
+    const orderIdInput = document.getElementById("orderId");
+    const statusSelect = document.getElementById("status");
+    const statusPreview = document.getElementById("statusPreview");
+    const updateButton = document.getElementById("updateButton");
+    const message = document.getElementById("message");
+
+    // Update status preview whenever selection changes
+    statusSelect.addEventListener("change", function () {
+        statusPreview.textContent = this.value;
+    });
+
+    // Update order status
+    form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const orderId = orderIdInput.value.trim();
+        const status = statusSelect.value;
+
+        if (!orderId) {
+            showMessage("Please enter a valid Order ID.", "error");
+            orderIdInput.focus();
+            return;
+        }
+
+        updateButton.disabled = true;
+        updateButton.innerHTML = '<span class="loader"></span> Updating...';
+
+        message.className = "message";
+        message.textContent = "";
+
+        try {
             const response = await fetch("/api/update-status", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
-                    orderId: document.getElementById("orderId").value.trim(),
-                    status: document.getElementById("status").value
+                    orderId: orderId,
+                    status: status
                 })
             });
 
             const result = await response.json();
-            document.getElementById("message").textContent =
-                result.message || "Something went wrong.";
+
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to update order status.");
+            }
+
+            showMessage(
+                result.message || `Order ${orderId} updated to "${status}" successfully!`,
+                "success"
+            );
+
+        } catch (error) {
+            showMessage(
+                error.message || "Server error. Please try again.",
+                "error"
+            );
+        } finally {
+            updateButton.disabled = false;
+            updateButton.textContent = "Update Order Status";
         }
-    </script>
+    });
+
+    function showMessage(text, type) {
+        message.textContent = text;
+        message.className = "message " + type;
+    }
+</script>
+
 </body>
 </html>
