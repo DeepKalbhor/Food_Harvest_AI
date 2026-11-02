@@ -1,34 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Donate Food | Food Harvest AI</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
+@@ -11,7 +11,9 @@
 
 <nav class="navbar">
     <div class="logo">🍱 Food Harvest <span>AI</span></div>
+    <div class="nav-links"><a href="/">Home</a></div>
     <div class="nav-links">
         <a href="/">Home</a>
     </div>
 </nav>
 
 <main class="hero">
-    <section class="hero-content">
-        <div class="badge">Food Redistribution</div>
-        <h1>Donate Surplus <span>Food.</span></h1>
-        <p class="hero-description">
-            Share available food with an NGO in your area.
-        </p>
-    </section>
-
-    <form id="donationForm" class="stat-card"
+@@ -27,99 +29,157 @@
           style="max-width:550px;margin:35px auto;text-align:left">
 
         <label for="foodName">Food name</label>
+        <input id="foodName" required placeholder="e.g. Vegetable Biryani"
+               style="width:100%;padding:12px;margin:8px 0 18px">
         <input
             id="foodName"
             type="text"
@@ -39,6 +28,15 @@
         >
 
         <label for="category">Food category</label>
+<select id="category" required
+        style="width:100%;padding:12px;margin:8px 0 18px">
+    <option value="Rice">Rice</option>
+    <option value="Curry">Curry</option>
+    <option value="Vegetarian">Vegetarian</option>
+    <option value="Gujarati">Gujarati</option>
+    <option value="South Indian">South Indian</option>
+    <option value="Other">Other</option>
+</select>
         <select
             id="category"
             required
@@ -53,6 +51,9 @@
         </select>
 
         <label for="quantity">Quantity</label>
+        <input id="quantity" type="number" min="0.1" step="any"
+               required placeholder="e.g. 25"
+               style="width:100%;padding:12px;margin:8px 0 18px">
         <input
             id="quantity"
             type="number"
@@ -64,6 +65,8 @@
         >
 
         <label for="unit">Unit</label>
+        <select id="unit"
+                style="width:100%;padding:12px;margin:8px 0 18px">
         <select
             id="unit"
             required
@@ -75,6 +78,20 @@
             <option value="packets">Packets</option>
         </select>
 
+        <label for="location">Pickup location</label>
+        <input id="location" required placeholder="e.g. Ahmedabad"
+               style="width:100%;padding:12px;margin:8px 0 22px">
+
+        <button type="submit" class="btn btn-primary"
+                style="width:100%;border:0;cursor:pointer">
+        <input
+            id="location"
+            type="text"
+            required
+            maxlength="255"
+            placeholder="e.g. Navrangpura, Ahmedabad"
+            style="width:100%;padding:12px;margin:8px 0 22px"
+        >
 
         <p id="formMessage" role="status"
            style="margin:0 0 15px;color:#b02a37"></p>
@@ -89,7 +106,10 @@
     </form>
 </main>
 
+
 <script>
+document.getElementById("donationForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
 const donationForm = document.getElementById("donationForm");
 const formMessage = document.getElementById("formMessage");
 const submitButton = donationForm.querySelector('button[type="submit"]');
@@ -99,15 +119,24 @@ donationForm.addEventListener("submit", async function(event) {
 
     formMessage.textContent = "";
 
+    const button = this.querySelector('button[type="submit"]');
+    const food = document.getElementById("foodName").value.trim();
     const foodName = document.getElementById("foodName").value.trim();
     const category = document.getElementById("category").value;
     const quantity = Number(document.getElementById("quantity").value);
     const unit = document.getElementById("unit").value;
+    const location = document.getElementById("location").value.trim();
+    const category = document.getElementById("category").value;
+
+    if (!food || !location || !Number.isFinite(quantity) || quantity <= 0) {
+        alert("Please enter valid food details.");
+    const pickupAddress = document.getElementById("location").value.trim();
 
     if (
         !foodName ||
         !category ||
         !unit ||
+        !pickupAddress ||
         !Number.isFinite(quantity) ||
         quantity <= 0
     ) {
@@ -115,6 +144,8 @@ donationForm.addEventListener("submit", async function(event) {
         return;
     }
 
+    button.disabled = true;
+    button.textContent = "Saving donation...";
     submitButton.disabled = true;
     submitButton.textContent = "Saving donation...";
 
@@ -122,21 +153,27 @@ donationForm.addEventListener("submit", async function(event) {
         const response = await fetch("/api/donations", {
             method: "POST",
             headers: {
+                "Content-Type": "application/json"
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
             body: JSON.stringify({
+                food_name: food,
                 food_name: foodName,
                 category: category,
                 quantity: quantity,
                 unit: unit,
+                pickup_address: location
                 pickup_address: pickupAddress
             })
         });
 
+        const result = await response.json();
         const responseText = await response.text();
         let result;
 
+        if (!response.ok) {
+            throw new Error(result.error || "Could not save donation.");
         try {
             result = JSON.parse(responseText);
         } catch {
@@ -146,6 +183,7 @@ donationForm.addEventListener("submit", async function(event) {
             );
         }
 
+        sessionStorage.setItem("foodName", food);
         if (!response.ok || !result.success) {
             throw new Error(
                 result.error || result.message || "Unable to save donation."
@@ -155,11 +193,16 @@ donationForm.addEventListener("submit", async function(event) {
         sessionStorage.setItem("foodName", foodName);
         sessionStorage.setItem("quantity", String(quantity));
         sessionStorage.setItem("unit", unit);
+        sessionStorage.setItem("pickupLocation", location);
+        sessionStorage.setItem("pickupLocation", pickupAddress);
         sessionStorage.setItem("foodId", String(result.foodId));
 
         window.location.href = "/matching";
 
     } catch (error) {
+        alert(error.message || "Unable to save donation. Please try again.");
+        button.disabled = false;
+        button.textContent = "Find Nearby NGO";
         console.error("Donation submission failed:", error);
         formMessage.textContent = error.message;
         submitButton.disabled = false;
@@ -168,6 +211,6 @@ donationForm.addEventListener("submit", async function(event) {
 });
 </script>
 
+
 </body>
 </html>
-```
