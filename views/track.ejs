@@ -1,346 +1,393 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Track Delivery | Food Harvest AI</title>
-
-    <link rel="stylesheet"
-          href="/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Order Tracking | Food Harvest AI</title>
 
     <link rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f8f5;
+            color: #183b2b;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 18px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 18px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.06);
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-top: 15px;
+        }
+
+        .detail-box {
+            background: #f1f8f3;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .detail-box small {
+            color: #64756b;
+            display: block;
+            margin-bottom: 7px;
+        }
+
+        .detail-box strong {
+            font-size: 15px;
+            overflow-wrap: anywhere;
+        }
+
+        #map {
+            height: 480px;
+            width: 100%;
+            border-radius: 12px;
+            z-index: 1;
+        }
+
+        .status {
+            margin: 15px 0;
+            padding: 13px;
+            border-radius: 8px;
+            background: #fff7df;
+            color: #815d00;
+        }
+
+        .status.active {
+            background: #e3f7e9;
+            color: #176b45;
+        }
+
+        .status.error {
+            background: #ffe8e8;
+            color: #a32121;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin: 15px 0;
+            color: #52665a;
+            font-size: 14px;
+        }
+
+        .legend span {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            border-radius: 50%;
+        }
+
+        .blue { background: #2878d0; }
+        .green { background: #24964c; }
+        .red { background: #dc3434; }
+
+        .muted {
+            color: #64756b;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        @media(max-width: 600px) {
+            #map {
+                height: 370px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="tracking-page">
+<header>
+    <h2>Food Harvest AI</h2>
+    <span>Live Order Tracking</span>
+</header>
 
-    <div class="tracking-header">
+<div class="container">
 
-        <div class="tracking-title">
+    <div class="card">
+        <h2>Order Details</h2>
 
-            <h2>
-                📍 Live Delivery Tracking
-            </h2>
-
-            <p>
-                Food Harvest AI
-            </p>
-
-        </div>
-
-        <div class="status">
-
-            <div id="statusDot"
-                 class="status-dot">
+        <div class="details">
+            <div class="detail-box">
+                <small>Order ID</small>
+                <strong id="orderId">Loading...</strong>
             </div>
 
-            <span id="statusText">
-                Connecting...
-            </span>
+            <div class="detail-box">
+                <small>Food</small>
+                <strong id="foodName">Loading...</strong>
+            </div>
 
+            <div class="detail-box">
+                <small>Restaurant</small>
+                <strong id="restaurantName">Loading...</strong>
+            </div>
+
+            <div class="detail-box">
+                <small>NGO</small>
+                <strong id="ngoName">Loading...</strong>
+            </div>
+
+            <div class="detail-box">
+                <small>Pickup Address</small>
+                <strong id="pickupAddress">Loading...</strong>
+            </div>
+
+            <div class="detail-box">
+                <small>Delivery Address</small>
+                <strong id="ngoAddress">Loading...</strong>
+            </div>
         </div>
-
     </div>
 
+    <div class="card">
+        <h2>Delivery Tracking</h2>
 
-    <div class="map-wrapper">
+        <div id="status" class="status">
+            Connecting to tracking service...
+        </div>
+
+        <div class="legend">
+            <span><i class="dot blue"></i> Restaurant Pickup</span>
+            <span><i class="dot green"></i> NGO Destination</span>
+            <span><i class="dot red"></i> Delivery Partner</span>
+        </div>
 
         <div id="map"></div>
 
-
-        <div class="map-card">
-
-            <h3>
-                🚚 Delivery Partner
-            </h3>
-
-            <div class="map-info">
-
-                <span>Status</span>
-
-                <span id="deliveryStatus">
-                    Waiting...
-                </span>
-
-            </div>
-
-            <div class="map-info">
-
-                <span>Latitude</span>
-
-                <span id="latitude">
-                    --
-                </span>
-
-            </div>
-
-            <div class="map-info">
-
-                <span>Longitude</span>
-
-                <span id="longitude">
-                    --
-                </span>
-
-            </div>
-
-        </div>
-
+        <p class="muted" id="lastUpdated">
+            Delivery partner location: Waiting for GPS...
+        </p>
     </div>
 
 </div>
 
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
-
 <script>
+    const orderId = <%- JSON.stringify(orderId) %>;
 
-const socket = io();
+    const statusBox = document.getElementById("status");
 
-const roomId = "<%= orderId %>";
+    let socket;
+    let map;
 
-console.log("Tracking room:", roomId);
+    let pickupMarker = null;
+    let ngoMarker = null;
+    let driverMarker = null;
+    let routeLine = null;
 
+    let pickupLocation = null;
+    let ngoLocation = null;
+    let deliveryDataLoaded = false;
 
-/* =========================
-   MAP
-========================= */
-
-const map = L.map("map");
-
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-        attribution:
-            "&copy; OpenStreetMap contributors"
+    function setStatus(message, type = "") {
+        statusBox.textContent = message;
+        statusBox.className = "status " + type;
     }
-).addTo(map);
 
+    function validCoordinates(lat, lng) {
+        return Number.isFinite(lat) &&
+               Number.isFinite(lng) &&
+               lat >= -90 && lat <= 90 &&
+               lng >= -180 && lng <= 180 &&
+               !(lat === 0 && lng === 0);
+    }
 
-/*
-   Start with a normal view.
-   We will automatically move to
-   the delivery location when received.
-*/
+    function initializeMap() {
+        map = L.map("map").setView([20.5937, 78.9629], 5);
 
-map.setView(
-    [23.0225, 72.5714],
-    13
-);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+    }
 
+    function addRoute() {
+        if (!pickupLocation || !ngoLocation) return;
 
-/* =========================
-   MARKERS
-========================= */
+        pickupMarker = L.marker(pickupLocation)
+            .addTo(map)
+            .bindPopup("Restaurant Pickup");
 
-let deliveryMarker = null;
+        ngoMarker = L.marker(ngoLocation)
+            .addTo(map)
+            .bindPopup("NGO Destination");
 
+        routeLine = L.polyline(
+            [pickupLocation, ngoLocation],
+            { color: "green", weight: 4, dashArray: "8, 8" }
+        ).addTo(map);
 
-/* Delivery icon */
-
-const deliveryIcon = L.divIcon({
-
-    className: "delivery-marker",
-
-    html: "🚚",
-
-    iconSize: [40, 40],
-
-    iconAnchor: [20, 20]
-
-});
-
-
-/* NGO location */
-
-const ngoLatitude = 23.1600;
-const ngoLongitude = 72.6750;
-
-
-/* NGO marker */
-
-const ngoMarker = L.marker(
-    [
-        ngoLatitude,
-        ngoLongitude
-    ]
-)
-.addTo(map)
-.bindPopup("📍 NGO");
-
-
-/* =========================
-   SOCKET CONNECTION
-========================= */
-
-socket.on("connect", function () {
-
-    console.log(
-        "Socket connected:",
-        socket.id
-    );
-
-    document
-        .getElementById("statusDot")
-        .classList
-        .add("connected");
-
-    document
-        .getElementById("statusText")
-        .innerText = "Live";
-
-
-    /*
-       IMPORTANT:
-       Join the SAME room as delivery tab.
-    */
-
-    socket.emit(
-        "join-order",
-        {
-            orderId: roomId,
-            role: "client"
-        }
-    );
-
-});
-
-
-/* =========================
-   RECEIVE LOCATION
-========================= */
-
-socket.on(
-    "receive-location",
-    function (data) {
-
-        console.log(
-            "LOCATION RECEIVED:",
-            data
+        map.fitBounds(
+            L.latLngBounds([pickupLocation, ngoLocation]),
+            { padding: [40, 40] }
         );
+    }
 
+    function updateDriverLocation(lat, lng) {
+        if (!validCoordinates(lat, lng)) return;
 
-        const latitude =
-            Number(data.latitude);
+        const position = [lat, lng];
 
-        const longitude =
-            Number(data.longitude);
-
-
-        if (
-            !Number.isFinite(latitude) ||
-            !Number.isFinite(longitude)
-        ) {
-
-            console.error(
-                "Invalid coordinates"
-            );
-
-            return;
-        }
-
-
-        /*
-           Update information card
-        */
-
-        document
-            .getElementById("latitude")
-            .innerText =
-            latitude.toFixed(6);
-
-        document
-            .getElementById("longitude")
-            .innerText =
-            longitude.toFixed(6);
-
-        document
-            .getElementById("deliveryStatus")
-            .innerText =
-            "Live location received";
-
-
-        /*
-           CREATE MARKER
-        */
-
-        if (!deliveryMarker) {
-
-            deliveryMarker =
-                L.marker(
-                    [
-                        latitude,
-                        longitude
-                    ],
-                    {
-                        icon:
-                            deliveryIcon
-                    }
-                )
+        if (!driverMarker) {
+            driverMarker = L.marker(position)
                 .addTo(map)
-                .bindPopup(
-                    "🚚 Delivery Partner"
-                );
-
+                .bindPopup("Delivery Partner")
+                .openPopup();
+        } else {
+            driverMarker.setLatLng(position);
         }
 
-        else {
+        document.getElementById("lastUpdated").textContent =
+            `Delivery partner location: ${lat.toFixed(6)}, ${lng.toFixed(6)} | Updated: ${new Date().toLocaleTimeString()}`;
 
-            deliveryMarker.setLatLng(
-                [
-                    latitude,
-                    longitude
-                ]
+        setStatus("Live location received from delivery partner.", "active");
+    }
+
+    async function loadDelivery() {
+        try {
+            const response = await fetch(
+                `/api/delivery/${encodeURIComponent(orderId)}`
             );
 
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || "Unable to load order.");
+            }
+
+            const d = result.delivery || result.data || result;
+
+            document.getElementById("orderId").textContent =
+                d.order_id || orderId;
+
+            document.getElementById("foodName").textContent =
+                d.food_name || "Food donation";
+
+            document.getElementById("restaurantName").textContent =
+                d.restaurant_name || "Restaurant";
+
+            document.getElementById("ngoName").textContent =
+                d.ngo_name || "NGO";
+
+            document.getElementById("pickupAddress").textContent =
+                d.pickup_address || "Not available";
+
+            document.getElementById("ngoAddress").textContent =
+                d.ngo_address || "Not available";
+
+            const pickupLat = Number(d.pickup_latitude);
+            const pickupLng = Number(d.pickup_longitude);
+
+            const ngoLat = Number(d.ngo_latitude);
+            const ngoLng = Number(d.ngo_longitude);
+
+            if (!validCoordinates(pickupLat, pickupLng)) {
+                throw new Error("Restaurant pickup coordinates are missing or invalid.");
+            }
+
+            if (!validCoordinates(ngoLat, ngoLng)) {
+                throw new Error("NGO destination coordinates are missing or invalid.");
+            }
+
+            pickupLocation = [pickupLat, pickupLng];
+            ngoLocation = [ngoLat, ngoLng];
+
+            addRoute();
+            deliveryDataLoaded = true;
+
+            setStatus("Order loaded. Waiting for delivery partner GPS location.");
+
+        } catch (error) {
+            console.error("Order loading error:", error);
+            setStatus(error.message, "error");
         }
-
-
-        /*
-           ZOOM TO DELIVERY
-        */
-
-        map.setView(
-            [
-                latitude,
-                longitude
-            ],
-            17
-        );
-
-
-        /*
-           Force Leaflet to recalculate
-           the map size.
-        */
-
-        setTimeout(
-            function () {
-
-                map.invalidateSize();
-
-            },
-            200
-        );
-
     }
-);
 
+    function connectSocket() {
+        socket = io();
+
+        socket.on("connect", () => {
+            socket.emit("join-order", {
+                orderId: orderId,
+                role: "client"
+            });
+
+            setStatus("Connected. Waiting for delivery partner location.");
+        });
+
+        socket.on("receive-location", (data) => {
+            if (!data) return;
+
+            // Ignore locations belonging to another order.
+            if (data.orderId && String(data.orderId) !== String(orderId)) {
+                return;
+            }
+
+            const lat = Number(data.latitude);
+            const lng = Number(data.longitude);
+
+            if (!validCoordinates(lat, lng)) return;
+
+            updateDriverLocation(lat, lng);
+        });
+
+        socket.on("connect_error", (error) => {
+            console.error("Tracking connection error:", error);
+            setStatus("Unable to connect to live tracking. Reconnecting...", "error");
+        });
+
+        socket.on("disconnect", () => {
+            setStatus("Connection lost. Trying to reconnect...", "error");
+        });
+    }
+
+    initializeMap();
+    connectSocket();
+    loadDelivery();
 </script>
 
 </body>
-
 </html>
