@@ -1,132 +1,381 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>Delivery Partner | Food Harvest AI</title>
 
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7f5;
+            color: #26352b;
+        }
+
+        header {
+            background: white;
+            padding: 18px 6%;
+            border-bottom: 1px solid #ddd;
+        }
+
+        header h2 {
+            margin: 0;
+            color: #167447;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 18px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            margin-bottom: 18px;
+            border: 1px solid #e0e5e0;
+            border-radius: 10px;
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+
+        .details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .label {
+            color: #777;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .value {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 8px;
+        }
+
+        .destination {
+            border-left: 4px solid #16834c;
+            padding-left: 12px;
+        }
+
+        .pickup {
+            border-left: 4px solid #2673c9;
+            padding-left: 12px;
+        }
+
+        button, .map-button {
+            display: inline-block;
+            background: #167447;
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        button:hover, .map-button:hover {
+            background: #105b37;
+        }
+
+        #message {
+            color: #b00020;
+            margin-top: 15px;
+        }
+
+        @media(max-width: 600px) {
+            main {
+                margin-top: 18px;
+            }
+
+            #map {
+                height: 320px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<div class="tracking-page">
-    <header class="tracking-header">
-        <div class="tracking-title">
-            <h2>🚚 Delivery Partner</h2>
-            <p>Tracking room: <%= orderId %></p>
-        </div>
-        <div class="status">
-            <span id="statusDot" class="status-dot"></span>
-            <span id="statusText">Connecting...</span>
-        </div>
-    </header>
 
-    <div class="map-wrapper">
-        <div id="map"></div>
+<header>
+    <h2>Food Harvest AI</h2>
+</header>
 
-        <div class="map-card">
-            <h3>📡 Your Live Location</h3>
-            <div class="map-info"><span>GPS</span><span id="gpsStatus">Waiting...</span></div>
-            <div class="map-info"><span>Latitude</span><span id="latitude">--</span></div>
-            <div class="map-info"><span>Longitude</span><span id="longitude">--</span></div>
+<main>
+
+    <div class="card">
+        <h3>Delivery Details</h3>
+
+        <div class="details">
+
+            <div>
+                <div class="label">Order ID</div>
+                <div class="value" id="orderId">Loading...</div>
+            </div>
+
+            <div>
+                <div class="label">Food Item</div>
+                <div class="value" id="foodName">Loading...</div>
+            </div>
+
+            <div>
+                <div class="label">Quantity</div>
+                <div class="value" id="quantity">Loading...</div>
+            </div>
+
+            <div>
+                <div class="label">Delivery Status</div>
+                <div class="value" id="status">Loading...</div>
+            </div>
+
         </div>
     </div>
-</div>
 
-<script src="/socket.io/socket.io.js"></script>
+
+    <div class="card">
+
+        <h3>Pickup Location</h3>
+
+        <div class="pickup">
+            <div class="value" id="restaurantName">Loading...</div>
+            <p id="pickupAddress"></p>
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Delivery Destination</h3>
+
+        <div class="destination">
+
+            <div class="value" id="ngoName">Loading...</div>
+
+            <p id="ngoAddress"></p>
+
+        </div>
+
+        <a
+            id="directions"
+            class="map-button"
+            href="#"
+            target="_blank"
+        >
+            Get Directions
+        </a>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Pickup and Delivery Map</h3>
+
+        <p>
+            Blue marker: Restaurant pickup<br>
+            Green marker: NGO delivery destination
+        </p>
+
+        <div id="map"></div>
+
+    </div>
+
+
+    <div id="message"></div>
+
+</main>
+
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-const socket = io();
-const roomId = <%- JSON.stringify(String(orderId)) %>;
 
-const map = L.map("map").setView([23.157272, 72.670295], 13);
+const orderId = <%- JSON.stringify(orderId) %>;
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors"
-}).addTo(map);
+let map;
 
-const truckIcon = L.divIcon({
-    className: "",
-    html: '<div class="delivery-marker">🚚</div>',
-    iconSize: [42, 42],
-    iconAnchor: [21, 21]
-});
+async function loadDelivery() {
 
-let marker = null;
+    try {
 
-socket.on("connect", () => {
-    document.getElementById("statusDot").classList.add("connected");
-    document.getElementById("statusText").textContent = "Connected";
+        const response = await fetch(
+            `/api/delivery/${encodeURIComponent(orderId)}`
+        );
 
-    socket.emit("join-order", {
-        orderId: roomId,
-        role: "delivery"
-    });
+        const result = await response.json();
 
-    console.log("Delivery joined room:", roomId);
-});
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Order not found");
+        }
 
-socket.on("disconnect", () => {
-    document.getElementById("statusDot").classList.remove("connected");
-    document.getElementById("statusText").textContent = "Disconnected";
-});
+        const d = result.delivery;
 
-function showLocation(latitude, longitude) {
-    const point = [latitude, longitude];
+        // DISPLAY DETAILS
 
-    if (!marker) {
-        marker = L.marker(point, { icon: truckIcon })
+        document.getElementById("orderId").textContent =
+            d.order_id;
+
+        document.getElementById("foodName").textContent =
+            d.food_name;
+
+        document.getElementById("quantity").textContent =
+            `${d.quantity} ${d.unit}`;
+
+        document.getElementById("status").textContent =
+            d.order_status;
+
+        document.getElementById("restaurantName").textContent =
+            d.restaurant_name;
+
+        document.getElementById("pickupAddress").textContent =
+            d.pickup_address;
+
+        document.getElementById("ngoName").textContent =
+            d.ngo_name;
+
+        document.getElementById("ngoAddress").textContent =
+            d.ngo_address;
+
+
+        // COORDINATES
+
+        const pickupLat = Number(d.pickup_latitude);
+        const pickupLng = Number(d.pickup_longitude);
+
+        const ngoLat = Number(d.ngo_latitude);
+        const ngoLng = Number(d.ngo_longitude);
+
+        if (
+            !Number.isFinite(pickupLat) ||
+            !Number.isFinite(pickupLng) ||
+            !Number.isFinite(ngoLat) ||
+            !Number.isFinite(ngoLng) ||
+            Math.abs(pickupLat) > 90 ||
+            Math.abs(ngoLat) > 90 ||
+            Math.abs(pickupLng) > 180 ||
+            Math.abs(ngoLng) > 180
+        ) {
+            throw new Error("Invalid pickup or NGO coordinates");
+        }
+
+
+        // INITIALIZE MAP
+
+        map = L.map("map");
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution: "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(map);
+
+
+        // PICKUP MARKER
+
+        const pickup = [pickupLat, pickupLng];
+
+        L.marker(pickup)
             .addTo(map)
-            .bindPopup("🚚 Delivery Partner");
-        marker.openPopup();
-    } else {
-        marker.setLatLng(point);
+            .bindPopup(
+                `<b>Pickup:</b> ${escapeHTML(d.restaurant_name)}`
+            );
+
+
+        // NGO DESTINATION MARKER
+
+        const destination = [ngoLat, ngoLng];
+
+        L.marker(destination)
+            .addTo(map)
+            .bindPopup(
+                `<b>Delivery Destination:</b> ${escapeHTML(d.ngo_name)}`
+            )
+            .openPopup();
+
+
+        // LINE BETWEEN LOCATIONS
+
+        const routeLine = L.polyline(
+            [pickup, destination],
+            {
+                color: "green",
+                weight: 4,
+                dashArray: "8, 8"
+            }
+        ).addTo(map);
+
+
+        // FIT MAP TO BOTH MARKERS
+
+        map.fitBounds(routeLine.getBounds(), {
+            padding: [40, 40]
+        });
+
+
+        // GOOGLE MAPS DIRECTIONS
+
+        const googleMapsURL =
+            `https://www.google.com/maps/dir/?api=1` +
+            `&origin=${pickupLat},${pickupLng}` +
+            `&destination=${ngoLat},${ngoLng}` +
+            `&travelmode=driving`;
+
+        document.getElementById("directions").href =
+            googleMapsURL;
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("message").textContent =
+            error.message;
+
     }
 
-    map.setView(point, 16);
-
-    document.getElementById("latitude").textContent = latitude.toFixed(6);
-    document.getElementById("longitude").textContent = longitude.toFixed(6);
-    document.getElementById("gpsStatus").textContent = "Active";
-
-    console.log("GPS location:", latitude, longitude);
 }
 
-function gpsError(error) {
-    console.error("GPS error:", error.code, error.message);
-    document.getElementById("gpsStatus").textContent = error.message;
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
 }
 
-if ("geolocation" in navigator) {
-    navigator.geolocation.watchPosition(
-        position => {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
 
-            showLocation(latitude, longitude);
+loadDelivery();
 
-            socket.emit("send-location", {
-                latitude,
-                longitude
-            });
-        },
-        gpsError,
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 3000
-        }
-    );
-} else {
-    document.getElementById("gpsStatus").textContent = "GPS unsupported";
-}
-
-window.addEventListener("load", () => {
-    setTimeout(() => map.invalidateSize(true), 300);
-});
 </script>
+
 </body>
 </html>
