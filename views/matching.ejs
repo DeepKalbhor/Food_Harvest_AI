@@ -387,10 +387,28 @@
                     window.location.origin +
                     "/delivery/" + encodeURIComponent(orderId);
 
+                // Pickup address is saved by the Donate page in sessionStorage.
+                const pickupAddress =
+                    sessionStorage.getItem("pickupLocation") ||
+                    "Not provided";
+
+                // Use the NGO selected by the user from the matching list.
+                const selectedNgoName =
+                    ngo.name ||
+                    ngo.ngo_name ||
+                    ("NGO #" + ngo.ngo_id);
+
+                const ngoAddress = ngo.address || "Not provided";
+
                 const messageText =
                     "New Food Harvest AI delivery order!\n\n" +
-                    "Order ID: " + orderId + "\n" +
-                    "Delivery page: " + deliveryUrl + "\n\n" +
+                    "Order ID: " + orderId + "\n\n" +
+                    "PICKUP DETAILS\n" +
+                    "Pickup location: " + pickupAddress + "\n\n" +
+                    "DELIVERY DETAILS\n" +
+                    "NGO name: " + selectedNgoName + "\n" +
+                    "NGO location: " + ngoAddress + "\n\n" +
+                    "Delivery partner page: " + deliveryUrl + "\n\n" +
                     "Please open the delivery page and allow location access.";
 
                 const whatsappLink = document.createElement("a");
