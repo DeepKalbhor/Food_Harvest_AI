@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,15 +75,6 @@
             <option value="packets">Packets</option>
         </select>
 
-        <label for="location">Pickup location</label>
-        <input
-            id="location"
-            type="text"
-            required
-            maxlength="255"
-            placeholder="e.g. Navrangpura, Ahmedabad"
-            style="width:100%;padding:12px;margin:8px 0 22px"
-        >
 
         <p id="formMessage" role="status"
            style="margin:0 0 15px;color:#b02a37"></p>
@@ -112,13 +103,11 @@ donationForm.addEventListener("submit", async function(event) {
     const category = document.getElementById("category").value;
     const quantity = Number(document.getElementById("quantity").value);
     const unit = document.getElementById("unit").value;
-    const pickupAddress = document.getElementById("location").value.trim();
 
     if (
         !foodName ||
         !category ||
         !unit ||
-        !pickupAddress ||
         !Number.isFinite(quantity) ||
         quantity <= 0
     ) {
@@ -166,7 +155,6 @@ donationForm.addEventListener("submit", async function(event) {
         sessionStorage.setItem("foodName", foodName);
         sessionStorage.setItem("quantity", String(quantity));
         sessionStorage.setItem("unit", unit);
-        sessionStorage.setItem("pickupLocation", pickupAddress);
         sessionStorage.setItem("foodId", String(result.foodId));
 
         window.location.href = "/matching";
