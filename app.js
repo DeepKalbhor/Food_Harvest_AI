@@ -192,22 +192,83 @@ app.get("/delivery-partner/:orderId", function(req, res) {
     return res.redirect("/delivery/" + encodeURIComponent(req.params.orderId));
 });
 
-app.get("/delivery/:orderId", async function(req, res) {
-    try {
-        const orderId = String(req.params.orderId || "").trim();
-        const [orders] = await db.query(
-            "SELECT order_id FROM Orders WHERE order_id = ? LIMIT 1",
-            [orderId]
-        );
+// DELIVERY PARTNER PAGE
+app.get("/delivery/:orderId", (req, res) => {
+    res.render("delivery", {
+        orderId: req.params.orderId
+    });
+});
 
-        if (orders.length === 0) {
-            return res.status(404).send("Order not found. Create the order before starting delivery tracking.");
+
+// GET DELIVERY DETAILS
+app.get("/api/delivery/:orderId", async (req, res) => {
+    try {
+        const { orderId } = req.params;
+
+        const [rows] = await db.query(`
+            SELECT
+                o.order_id,
+                o.order_status,
+
+                fd.food_name,
+                fd.quantity,
+                fd.unit,
+
+                fd.pickup_address,
+                fd.latitude AS pickup_latitude,
+                fd.longitude AS pickup_longitude,
+
+                r.restaurant_name,
+
+                n.ngo_name,
+                n.address AS ngo_address,
+                n.latitude AS ngo_latitude,
+                n.longitude AS ngo_longitude,
+
+                u.full_name AS driver_name
+
+            FROM Orders o
+
+            JOIN FoodRequests fr
+                ON o.request_id = fr.request_id
+
+            JOIN FoodDonations fd
+                ON fr.food_id = fd.food_id
+
+            JOIN Restaurants r
+                ON o.restaurant_id = r.restaurant_id
+
+            JOIN NGOs n
+                ON o.ngo_id = n.ngo_id
+
+            LEFT JOIN DeliveryPartners dp
+                ON o.driver_id = dp.driver_id
+
+            LEFT JOIN Users u
+                ON dp.user_id = u.user_id
+
+            WHERE o.order_id = ?
+        `, [orderId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
         }
 
-        return res.render("delivery", { orderId: orders[0].order_id });
+        res.json({
+            success: true,
+            delivery: rows[0]
+        });
+
     } catch (error) {
-        console.error("Delivery page error:", error.message);
-        return res.status(500).send("Unable to open the delivery page.");
+        console.error("Delivery details error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Could not load delivery details"
+        });
     }
 });
 
@@ -772,9 +833,9 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
 
-
 app.post("/api/ai-chat", async (req, res) => {
     try {
+
         const question = String(req.body.message || "").trim();
 
         if (!question) {
@@ -790,20 +851,51 @@ app.post("/api/ai-chat", async (req, res) => {
         }
 
         const result = await ai.interactions.create({
-            model: "gemini-3.8-flash",
+
+            // Changed model
+            model: "gemini-3.6-flash",
+
             input: question,
+
             system_instruction: `
-                You are the Food Harvest AI assistant.
-                The platform connects restaurants donating surplus
-                food, NGOs receiving donations, and delivery partners.
+                You are Food Harvest AI, a friendly and intelligent
+                assistant for a food donation management platform.
 
-                Explain how donations, NGO matching, orders,
-                delivery and tracking work.
+                ABOUT THE PLATFORM:
 
-                Do not invent live database information.
-                Never reveal passwords, API keys or secrets.
-                If asked for an order's current status, explain
-                that it must be checked on the tracking page.
+                Food Harvest AI connects:
+                1. Restaurants donating surplus food.
+                2. NGOs receiving surplus food.
+                3. Delivery partners transporting food.
+
+                YOUR RESPONSIBILITIES:
+
+                - Explain how food donations work.
+                - Explain NGO matching.
+                - Explain order creation and delivery.
+                - Explain how delivery partners work.
+                - Explain order tracking.
+                - Answer questions about food waste.
+                - Encourage food donation and sustainability.
+                - Help users understand platform features.
+
+                RESPONSE RULES:
+
+                1. Be friendly, professional and conversational.
+                2. Keep answers clear and concise.
+                3. Use bullet points when explaining processes.
+                4. Avoid unnecessarily complicated explanations.
+                5. Never invent database records.
+                6. Never claim an order has been delivered
+                   without actual database confirmation.
+                7. If someone asks about a specific order status,
+                   direct them to the tracking page.
+                8. Never reveal API keys, passwords or secrets.
+                9. If a question is unrelated to the platform,
+                   politely answer briefly or redirect the user.
+
+                Your objective is to make food donation
+                simple, accessible and efficient.
             `
         });
 
@@ -812,17 +904,17 @@ app.post("/api/ai-chat", async (req, res) => {
                 "Sorry, I couldn't generate a response."
         });
 
- 
-} catch (error) {
-    console.error("AI CHAT FAILED:", error.message);
-    console.error("Status:", error.status);
-    console.error("Code:", error.code);
-    console.error("Details:", error.errorDetails);
+    } catch (error) {
 
-    return res.status(500).json({
-        reply: "AI assistant failed. Check server logs."
-    });
-}
+        console.error("AI CHAT FAILED:", error.message);
+        console.error("Status:", error.status);
+        console.error("Code:", error.code);
+        console.error("Details:", error.errorDetails);
+
+        return res.status(500).json({
+            reply: "AI assistant is temporarily unavailable. Please try again."
+        });
+    }
 });
 
 // START SERVER — keep this at the bottom
