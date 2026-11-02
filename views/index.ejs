@@ -1,374 +1,1352 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Harvest AI</title>
+
+    <title>Food Harvest AI | Smarter Food Redistribution</title>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --green: #176b45;
+            --green-dark: #104d33;
+            --green-light: #eaf4ed;
+            --background: #fafbf9;
+            --text: #192a20;
+            --muted: #718077;
+            --border: #e7ece7;
+            --white: #ffffff;
+        }
+
+        * {
             margin: 0;
-            background: #f8faf8;
-            color: #333;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        nav {
-            background: white;
-            padding: 18px 8%;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 15px;
+        html {
+            scroll-behavior: smooth;
         }
 
-        nav strong {
-            color: #247747;
-            font-size: 20px;
-        }
-
-        nav div {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--background);
+            color: var(--text);
         }
 
         a {
-            color: #247747;
             text-decoration: none;
+            color: inherit;
         }
 
-        nav a {
-            color: #333;
+        button {
+            font-family: inherit;
         }
 
-        nav a:hover {
-            color: #247747;
+        /* NAVBAR */
+
+        .navbar {
+            height: 78px;
+            padding: 0 7%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.94);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
         }
 
-        main {
-            max-width: 900px;
-            margin: 70px auto;
-            padding: 0 20px;
-            text-align: center;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 11px;
         }
 
-        h1 {
-            font-size: 38px;
-            margin-bottom: 15px;
-        }
-
-        main p {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .buttons {
-            margin: 25px 0 55px;
-        }
-
-        .button {
-            display: inline-block;
-            margin: 5px;
-            padding: 12px 18px;
-            background: #247747;
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--green);
             color: white;
-            border-radius: 5px;
-        }
-
-        .features {
+            border-radius: 12px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 18px;
-            text-align: left;
+            place-items: center;
+            font-size: 23px;
         }
 
-        .card {
-            background: white;
-            padding: 22px;
-            border: 1px solid #e2e8e2;
+        .logo-text {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 19px;
+            letter-spacing: -0.7px;
+        }
+
+        .logo-text span {
+            color: var(--green);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 600;
+            color: #59665e;
+            transition: .2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--green);
+        }
+
+        .nav-button {
+            background: var(--green);
+            color: white !important;
+            padding: 12px 20px;
             border-radius: 7px;
         }
 
-        .card h3 {
-            margin-top: 0;
+        .nav-button:hover {
+            background: var(--green-dark);
         }
 
-        .card p {
+        /* HERO */
+
+        .hero {
+            padding: 90px 7% 85px;
+            display: grid;
+            grid-template-columns: 1.05fr .95fr;
+            gap: 55px;
+            align-items: center;
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 13px;
+            border-radius: 30px;
+            background: var(--green-light);
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #35a66a;
+        }
+
+        .hero h1 {
+            font-family: 'Manrope', sans-serif;
+            font-size: clamp(42px, 5.2vw, 69px);
+            line-height: 1.12;
+            letter-spacing: -3px;
+            font-weight: 800;
+            max-width: 650px;
+        }
+
+        .hero h1 span {
+            color: var(--green);
+        }
+
+        .hero-description {
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.9;
+            margin-top: 23px;
+            max-width: 520px;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 13px;
+            margin-top: 34px;
+            flex-wrap: wrap;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 23px;
+            border-radius: 8px;
             font-size: 14px;
+            font-weight: 700;
+            transition: .25s;
         }
 
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #777;
-            border-top: 1px solid #ddd;
-            background: white;
-        }
-
-        /* Chatbot */
-        #chat-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 17px;
-            border: none;
-            border-radius: 5px;
-            background: #247747;
+        .primary-btn {
+            background: var(--green);
             color: white;
-            cursor: pointer;
         }
 
-        #chatbox {
-            display: none;
-            position: fixed;
-            bottom: 75px;
-            right: 20px;
-            width: 300px;
-            height: 380px;
+        .primary-btn:hover {
+            background: var(--green-dark);
+            transform: translateY(-2px);
+        }
+
+        .secondary-btn {
             background: white;
-            border: 1px solid #ddd;
-            border-radius: 7px;
-            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
-        #chat-header {
+        .secondary-btn:hover {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .hero-note {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        /* HERO VISUAL */
+
+        .hero-visual {
+            position: relative;
+            min-height: 410px;
+            background: #eaf3e9;
+            border-radius: 22px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+        }
+
+        .hero-visual::before {
+            content: "";
+            position: absolute;
+            width: 330px;
+            height: 330px;
+            border-radius: 50%;
+            background: #d2e7d3;
+            top: -110px;
+            right: -80px;
+        }
+
+        .hero-visual::after {
+            content: "";
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            background: #d6e9d8;
+            bottom: -100px;
+            left: -50px;
+        }
+
+        .visual-card {
+            background: white;
+            border: 1px solid rgba(0,0,0,.04);
+            border-radius: 17px;
+            padding: 25px;
+            width: 100%;
+            max-width: 370px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 20px 50px rgba(31,75,45,.10);
+        }
+
+        .visual-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            background: #247747;
-            color: white;
+            margin-bottom: 25px;
         }
 
-        #chat-header button {
-            background: none;
+        .visual-title {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .live-label {
+            font-size: 10px;
+            color: var(--green);
+            background: var(--green-light);
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .flow-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 0;
+        }
+
+        .flow-icon {
+            width: 43px;
+            height: 43px;
+            border-radius: 12px;
+            background: var(--green-light);
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+        }
+
+        .flow-info strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .flow-info small {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .flow-arrow {
+            color: #a5b5a9;
+            margin-left: auto;
+            font-size: 20px;
+        }
+
+        .flow-line {
+            border-left: 1px dashed #cbd9cd;
+            height: 17px;
+            margin-left: 21px;
+        }
+
+        .visual-footer {
+            margin-top: 20px;
+            padding-top: 17px;
+            border-top: 1px solid var(--border);
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* SECTION COMMON */
+
+        .section {
+            padding: 75px 7%;
+        }
+
+        .section-heading {
+            text-align: center;
+            margin-bottom: 43px;
+        }
+
+        .section-heading small {
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            font-size: 11px;
+        }
+
+        .section-heading h2 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 35px;
+            letter-spacing: -1.4px;
+            margin-top: 12px;
+        }
+
+        .section-heading p {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        /* MODULES */
+
+        .modules {
+            background: white;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 17px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .module-card {
+            padding: 26px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: white;
+            transition: .25s;
+        }
+
+        .module-card:hover {
+            border-color: #9cbea5;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(30,70,40,.06);
+        }
+
+        .module-icon {
+            width: 47px;
+            height: 47px;
+            display: grid;
+            place-items: center;
+            background: var(--green-light);
+            border-radius: 12px;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .module-card h3 {
+            font-size: 16px;
+            margin-bottom: 9px;
+        }
+
+        .module-card p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.7;
+            min-height: 44px;
+        }
+
+        .module-link {
+            display: inline-block;
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 800;
+            margin-top: 20px;
+        }
+
+        .module-link span {
+            margin-left: 5px;
+        }
+
+        /* WORKFLOW */
+
+        .workflow {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .step {
+            text-align: center;
+            padding: 20px 12px;
+        }
+
+        .step-number {
+            width: 45px;
+            height: 45px;
+            margin: auto auto 18px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--green);
             color: white;
+            font-weight: 800;
+        }
+
+        .step h3 {
+            font-size: 15px;
+            margin-bottom: 9px;
+        }
+
+        .step p {
+            font-size: 12px;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        /* CTA */
+
+        .cta {
+            padding: 0 7% 80px;
+        }
+
+        .cta-inner {
+            max-width: 1200px;
+            margin: auto;
+            background: var(--green-dark);
+            color: white;
+            border-radius: 17px;
+            padding: 55px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .cta-inner h2 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 30px;
+            letter-spacing: -1px;
+        }
+
+        .cta-inner p {
+            color: #d1e2d6;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .cta-inner .primary-btn {
+            background: white;
+            color: var(--green-dark);
+            white-space: nowrap;
+        }
+
+        /* FOOTER */
+
+        footer {
+            background: white;
+            border-top: 1px solid var(--border);
+            padding: 30px 7%;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .footer-content p {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            font-size: 12px;
+            color: #68766d;
+        }
+
+        /* CHATBOT */
+
+        .chat-button {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 200;
+            width: 60px;
+            height: 60px;
             border: none;
+            border-radius: 50%;
+            background: var(--green);
+            color: white;
+            font-size: 25px;
             cursor: pointer;
+            box-shadow: 0 6px 25px rgba(0,0,0,.2);
         }
 
-        #messages {
-            height: 265px;
-            overflow-y: auto;
-            padding: 10px;
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 350px;
+            max-width: calc(100vw - 30px);
+            height: 440px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 45px rgba(0,0,0,.17);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 200;
+            border: 1px solid var(--border);
+        }
+
+        .chat-header {
+            background: var(--green);
+            color: white;
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header strong {
             font-size: 14px;
         }
 
-        .message {
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 5px;
-            background: #f0f3f0;
-            overflow-wrap: anywhere;
-            white-space: pre-wrap;
+        .chat-header small {
+            display: block;
+            font-size: 10px;
+            margin-top: 4px;
+            opacity: .8;
         }
 
-        .user-message {
-            background: #e1f2e5;
-            text-align: right;
-        }
-
-        #chat-form {
-            display: flex;
-            padding: 8px;
-            gap: 5px;
-            border-top: 1px solid #ddd;
-        }
-
-        #chat-input {
-            width: 100%;
-            min-width: 0;
-            padding: 8px;
-            border: 1px solid #ddd;
-        }
-
-        #chat-form button {
-            background: #247747;
-            color: white;
+        .chat-close {
             border: none;
-            padding: 8px 12px;
+            color: white;
+            background: transparent;
+            font-size: 22px;
             cursor: pointer;
         }
 
-        @media (max-width: 600px) {
-            nav {
-                flex-direction: column;
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #fafcf9;
+        }
+
+        .chat-message {
+            font-size: 12px;
+            line-height: 1.6;
+            padding: 11px 13px;
+            border-radius: 11px;
+            margin-bottom: 10px;
+            max-width: 88%;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .bot-message {
+            background: #edf3ed;
+            color: #26352b;
+        }
+
+        .user-message {
+            background: var(--green);
+            color: white;
+            margin-left: auto;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 12px;
+            gap: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            outline: none;
+            font-size: 12px;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--green);
+        }
+
+        .chat-input-area button {
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 7px;
+            padding: 0 15px;
+            cursor: pointer;
+        }
+
+        /* RESPONSIVE */
+
+        @media(max-width: 900px) {
+
+            .hero {
+                grid-template-columns: 1fr;
+                padding-top: 60px;
             }
 
-            main {
-                margin-top: 40px;
+            .hero-visual {
+                min-height: 370px;
             }
 
-            h1 {
-                font-size: 30px;
+            .module-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
 
-            #chatbox {
-                right: 10px;
-                width: calc(100% - 20px);
-                max-width: 300px;
+            .workflow-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .nav-links {
+                gap: 15px;
             }
         }
+
+        @media(max-width: 600px) {
+
+            .navbar {
+                height: 68px;
+                padding: 0 5%;
+            }
+
+            .nav-links {
+                gap: 12px;
+            }
+
+            .nav-links a:not(.nav-button) {
+                display: none;
+            }
+
+            .hero {
+                padding: 55px 6%;
+            }
+
+            .hero h1 {
+                letter-spacing: -2px;
+            }
+
+            .section {
+                padding: 55px 6%;
+            }
+
+            .section-heading h2 {
+                font-size: 27px;
+            }
+
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .workflow-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .cta-inner {
+                padding: 30px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .cta-inner h2 {
+                font-size: 24px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+        }
+
     </style>
 </head>
 
 <body>
 
-    <nav>
-        <strong>Food Harvest AI</strong>
+<!-- NAVBAR -->
 
-        <div>
-            <a href="/">Home</a>
-            <a href="/donate">Donate Food</a>
-            <a href="/matching">NGO Matching</a>
-            <a href="/orders">Orders</a>
-            <a href="/dashboard">Dashboard</a>
+<nav class="navbar">
+
+    <a href="/" class="logo">
+        <div class="logo-icon">♧</div>
+
+        <div class="logo-text">
+            Food Harvest <span>AI</span>
         </div>
-    </nav>
+    </a>
 
-    <main>
-        <h1>Reduce Food Waste, Share More Meals</h1>
+    <div class="nav-links">
 
-        <p>
-            Food Harvest AI connects restaurants with surplus food
-            to NGOs that need it, helping communities access food
-            while reducing waste.
+        <a href="#home">Home</a>
+        <a href="#modules">Platform</a>
+        <a href="#workflow">How It Works</a>
+        <a href="/dashboard">Dashboard</a>
+
+        <a href="/donate" class="nav-button">
+            Donate Food →
+        </a>
+
+    </div>
+
+</nav>
+
+
+<!-- HERO -->
+
+<section class="hero" id="home">
+
+    <div>
+
+        <div class="badge">
+            <span class="badge-dot"></span>
+            SMART FOOD REDISTRIBUTION PLATFORM
+        </div>
+
+        <h1>
+            Turning Food
+            <span>Surplus</span>
+            Into Hope.
+        </h1>
+
+        <p class="hero-description">
+            A smarter way to connect restaurants, NGOs and delivery
+            partners. Reduce food waste, simplify donations and help
+            surplus food reach the people who need it.
         </p>
 
-        <div class="buttons">
-            <a class="button" href="/donate">Donate Food</a>
-            <a class="button" href="/matching">Find an NGO</a>
+        <div class="hero-actions">
+
+            <a href="/donate" class="primary-btn">
+                Start Donating <span>→</span>
+            </a>
+
+            <a href="/matching" class="secondary-btn">
+                Explore NGO Matching
+            </a>
+
         </div>
 
-        <section class="features">
-            <div class="card">
-                <h3>Donate Food</h3>
-                <p>Register surplus food and provide pickup details.</p>
-                <a href="/donate">Create Donation →</a>
+        <div class="hero-note">
+            ♻ &nbsp; Reduce waste. Redistribute food. Create impact.
+        </div>
+
+    </div>
+
+
+    <div class="hero-visual">
+
+        <div class="visual-card">
+
+            <div class="visual-top">
+
+                <div class="visual-title">
+                    Donation Workflow
+                </div>
+
+                <div class="live-label">
+                    ● CONNECTED
+                </div>
+
             </div>
 
-            <div class="card">
-                <h3>NGO Matching</h3>
-                <p>Find suitable NGOs for available food donations.</p>
-                <a href="/matching">Find NGOs →</a>
+
+            <div class="flow-item">
+
+                <div class="flow-icon">🍲</div>
+
+                <div class="flow-info">
+                    <strong>Food Donation</strong>
+                    <small>Restaurant registers surplus food</small>
+                </div>
+
+                <div class="flow-arrow">✓</div>
+
             </div>
 
-            <div class="card">
-                <h3>Manage Orders</h3>
-                <p>Review orders and monitor their delivery status.</p>
-                <a href="/orders">View Orders →</a>
+            <div class="flow-line"></div>
+
+
+            <div class="flow-item">
+
+                <div class="flow-icon">🤝</div>
+
+                <div class="flow-info">
+                    <strong>NGO Matching</strong>
+                    <small>Suitable organisations identified</small>
+                </div>
+
+                <div class="flow-arrow">✓</div>
+
             </div>
-        </section>
-    </main>
 
-    <footer>
-        Food Harvest AI © 2026
-    </footer>
+            <div class="flow-line"></div>
 
-    <!-- Chatbot -->
-    <button id="chat-button" type="button">Ask Food AI</button>
 
-    <section id="chatbox">
-        <div id="chat-header">
+            <div class="flow-item">
+
+                <div class="flow-icon">🚚</div>
+
+                <div class="flow-info">
+                    <strong>Delivery Coordination</strong>
+                    <small>Pickup and destination details</small>
+                </div>
+
+                <div class="flow-arrow">✓</div>
+
+            </div>
+
+            <div class="flow-line"></div>
+
+
+            <div class="flow-item">
+
+                <div class="flow-icon">🌱</div>
+
+                <div class="flow-info">
+                    <strong>Food Delivered</strong>
+                    <small>Donation reaches its destination</small>
+                </div>
+
+                <div class="flow-arrow">✓</div>
+
+            </div>
+
+
+            <div class="visual-footer">
+                One platform. One connected workflow.
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- MODULES -->
+
+<section class="section modules" id="modules">
+
+    <div class="section-heading">
+
+        <small>OUR PLATFORM</small>
+
+        <h2>Everything in One Place.</h2>
+
+        <p>
+            Access all the essential tools for managing food redistribution.
+        </p>
+
+    </div>
+
+
+    <div class="module-grid">
+
+
+        <div class="module-card">
+
+            <div class="module-icon">🍱</div>
+
+            <h3>Food Donation</h3>
+
+            <p>
+                Register surplus food with quantity, category,
+                availability and pickup information.
+            </p>
+
+            <a href="/donate" class="module-link">
+                Donate Food <span>→</span>
+            </a>
+
+        </div>
+
+
+        <div class="module-card">
+
+            <div class="module-icon">🤝</div>
+
+            <h3>NGO Matching</h3>
+
+            <p>
+                Find suitable NGOs using donation information,
+                location and available capacity.
+            </p>
+
+            <a href="/matching" class="module-link">
+                Find NGOs <span>→</span>
+            </a>
+
+        </div>
+
+
+        <div class="module-card">
+
+            <div class="module-icon">📦</div>
+
+            <h3>Order Management</h3>
+
+            <p>
+                Manage donation orders and monitor their
+                progress from creation to delivery.
+            </p>
+
+            <a href="/orders" class="module-link">
+                Manage Orders <span>→</span>
+            </a>
+
+        </div>
+
+
+        <div class="module-card">
+
+            <div class="module-icon">🚚</div>
+
+            <h3>Delivery Coordination</h3>
+
+            <p>
+                Access delivery information, pickup locations
+                and NGO destination details.
+            </p>
+
+            <a href="/orders" class="module-link">
+                View Orders <span>→</span>
+            </a>
+
+        </div>
+
+
+        <div class="module-card">
+
+            <div class="module-icon">📍</div>
+
+            <h3>Live Tracking</h3>
+
+            <p>
+                Follow delivery progress using an order-specific
+                tracking link.
+            </p>
+
+            <a href="/orders" class="module-link">
+                Find an Order <span>→</span>
+            </a>
+
+        </div>
+
+
+        <div class="module-card">
+
+            <div class="module-icon">📊</div>
+
+            <h3>Dashboard & Reports</h3>
+
+            <p>
+                Monitor donations, order statuses and
+                delivery performance in one dashboard.
+            </p>
+
+            <a href="/dashboard" class="module-link">
+                Open Dashboard <span>→</span>
+            </a>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+<!-- WORKFLOW -->
+
+<section class="section" id="workflow">
+
+    <div class="section-heading">
+
+        <small>SIMPLE PROCESS</small>
+
+        <h2>How Food Harvest AI Works.</h2>
+
+        <p>
+            A simple process connecting surplus food with communities.
+        </p>
+
+    </div>
+
+
+    <div class="workflow">
+
+        <div class="workflow-grid">
+
+
+            <div class="step">
+
+                <div class="step-number">01</div>
+
+                <h3>Donate</h3>
+
+                <p>
+                    Restaurants submit available surplus
+                    food through the platform.
+                </p>
+
+            </div>
+
+
+            <div class="step">
+
+                <div class="step-number">02</div>
+
+                <h3>Match</h3>
+
+                <p>
+                    Suitable NGOs are identified based on
+                    donation and location information.
+                </p>
+
+            </div>
+
+
+            <div class="step">
+
+                <div class="step-number">03</div>
+
+                <h3>Coordinate</h3>
+
+                <p>
+                    Orders and delivery details are
+                    shared with the relevant participants.
+                </p>
+
+            </div>
+
+
+            <div class="step">
+
+                <div class="step-number">04</div>
+
+                <h3>Deliver</h3>
+
+                <p>
+                    Food reaches the selected NGO,
+                    and the delivery status is updated.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- CTA -->
+
+<section class="cta">
+
+    <div class="cta-inner">
+
+        <div>
+
+            <h2>Make Every Meal Count.</h2>
+
+            <p>
+                Be part of a smarter approach to food redistribution.
+            </p>
+
+        </div>
+
+        <a href="/donate" class="primary-btn">
+            Get Started →
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    <div class="footer-content">
+
+        <div class="logo">
+
+            <div class="logo-icon">♧</div>
+
+            <div class="logo-text">
+                Food Harvest <span>AI</span>
+            </div>
+
+        </div>
+
+        <p>
+            © 2026 Food Harvest AI. Built for a better tomorrow.
+        </p>
+
+        <div class="footer-links">
+
+            <a href="/">Home</a>
+            <a href="/donate">Donate</a>
+            <a href="/matching">NGO Matching</a>
+            <a href="/dashboard">Dashboard</a>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- CHATBOT BUTTON -->
+
+<button class="chat-button" onclick="toggleChat()" title="Chat with AI">
+    ✦
+</button>
+
+
+<!-- CHATBOT WINDOW -->
+
+<div class="chat-window" id="chatWindow">
+
+    <div class="chat-header">
+
+        <div>
             <strong>Food Harvest AI Assistant</strong>
-            <button id="close-chat" type="button">✕</button>
+            <small>Ask me anything about the platform</small>
         </div>
 
-        <div id="messages">
-            <div class="message">
-                Hello! Ask me about food donations, NGO matching, or orders.
-            </div>
+        <button class="chat-close" onclick="toggleChat()">×</button>
+
+    </div>
+
+
+    <div class="chat-messages" id="chatMessages">
+
+        <div class="chat-message bot-message">
+            Hello! Welcome to Food Harvest AI.
+
+            How can I help you today?
         </div>
 
-        <form id="chat-form">
-            <input
-                id="chat-input"
-                type="text"
-                placeholder="Type a message..."
-                maxlength="1000"
-                autocomplete="off"
-                required
-            >
-            <button type="submit">Send</button>
-        </form>
-    </section>
+    </div>
 
-    <script>
-        const chatbox = document.getElementById("chatbox");
-        const messages = document.getElementById("messages");
-        const chatInput = document.getElementById("chat-input");
-        const chatForm = document.getElementById("chat-form");
-        const sendButton = chatForm.querySelector("button");
 
-        document.getElementById("chat-button").onclick = () => {
-            chatbox.style.display = "block";
-            chatInput.focus();
-        };
+    <form class="chat-input-area" id="chatForm">
 
-        document.getElementById("close-chat").onclick = () => {
-            chatbox.style.display = "none";
-        };
+        <input
+            type="text"
+            id="chatInput"
+            placeholder="Ask your question..."
+            autocomplete="off"
+            required
+        >
 
-        function addMessage(text, isUser = false) {
-            const message = document.createElement("div");
-            message.className = "message" +
-                (isUser ? " user-message" : "");
+        <button type="submit">➤</button>
 
-            message.textContent = text;
-            messages.appendChild(message);
-            messages.scrollTop = messages.scrollHeight;
+    </form>
 
-            return message;
+</div>
+
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+function toggleChat() {
+
+    const chat = document.getElementById("chatWindow");
+
+    chat.style.display =
+        chat.style.display === "flex" ? "none" : "flex";
+
+}
+
+
+function addMessage(message, type) {
+
+    const container = document.getElementById("chatMessages");
+
+    const div = document.createElement("div");
+
+    div.className = "chat-message " + type;
+
+    div.textContent = message;
+
+    container.appendChild(div);
+
+    container.scrollTop = container.scrollHeight;
+
+}
+
+
+document.getElementById("chatForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const input = document.getElementById("chatInput");
+
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        addMessage(message, "user-message");
+
+        input.value = "";
+
+        const loading = document.createElement("div");
+
+        loading.className = "chat-message bot-message";
+
+        loading.textContent = "Thinking...";
+
+        const container = document.getElementById("chatMessages");
+
+        container.appendChild(loading);
+
+        container.scrollTop = container.scrollHeight;
+
+        try {
+
+            const response = await fetch("/api/ai-chat", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    message: message
+                })
+
+            });
+
+            const data = await response.json();
+
+            loading.remove();
+
+            if (!response.ok) {
+                throw new Error(data.reply || "Unable to get a response.");
+            }
+
+            addMessage(
+                data.reply || "I could not generate a response.",
+                "bot-message"
+            );
+
+        } catch(error) {
+
+            loading.remove();
+
+            addMessage(
+                "Sorry, something went wrong. Please try again.",
+                "bot-message"
+            );
+
+            console.error(error);
+
         }
 
-        chatForm.addEventListener("submit", async (event) => {
-            event.preventDefault();
+    }
+);
 
-            const question = chatInput.value.trim();
-
-            if (!question || sendButton.disabled) return;
-
-            addMessage(question, true);
-            chatInput.value = "";
-            sendButton.disabled = true;
-
-            const reply = addMessage("Thinking...");
-
-            try {
-                const response = await fetch("/api/ai-chat", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        message: question
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(
-                        data.message || "Unable to get a response."
-                    );
-                }
-
-                reply.textContent =
-                    data.reply || "No response received.";
-
-            } catch (error) {
-                reply.textContent =
-                    error.message || "Could not connect to the AI assistant.";
-            } finally {
-                sendButton.disabled = false;
-                chatInput.focus();
-            }
-        });
-    </script>
+</script>
 
 </body>
 </html>
-```
