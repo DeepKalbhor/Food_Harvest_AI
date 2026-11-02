@@ -120,6 +120,16 @@
             color: white;
         }
 
+        #googleMapsBtn {
+            background: #ffffff;
+            color: #176b45;
+            border: 1px solid #176b45;
+        }
+
+        #googleMapsBtn:hover {
+            background: #edf7f0;
+        }
+
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -216,6 +226,16 @@
         </p>
         <br>
         <div id="map"></div>
+
+        <div style="margin-top: 16px;">
+            <button id="googleMapsBtn" disabled>
+                Navigate to NGO in Google Maps
+            </button>
+            <p class="muted">
+                Opens Google Maps with the NGO as your destination. Google Maps
+                will show the road route and navigation options.
+            </p>
+        </div>
     </div>
 
 </div>
@@ -229,6 +249,7 @@
     const statusBox = document.getElementById("status");
     const startBtn = document.getElementById("startBtn");
     const stopBtn = document.getElementById("stopBtn");
+    const googleMapsBtn = document.getElementById("googleMapsBtn");
 
     let socket;
     let watchId = null;
@@ -241,6 +262,7 @@
     let pickupLocation = null;
     let ngoLocation = null;
     let deliveryDataLoaded = false;
+    let currentDriverLocation = null;
 
     function setStatus(message, type = "") {
         statusBox.textContent = message;
@@ -302,8 +324,39 @@
             driverMarker.setLatLng(position);
         }
 
+        currentDriverLocation = [lat, lng];
+
         document.getElementById("coordinates").textContent =
             `Current coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    }
+
+    function openGoogleMapsNavigation() {
+        if (!ngoLocation || !validCoordinates(ngoLocation[0], ngoLocation[1])) {
+            setStatus("NGO destination coordinates are not available.", "error");
+            return;
+        }
+
+        const params = new URLSearchParams({
+            api: "1",
+            destination: `${ngoLocation[0]},${ngoLocation[1]}`,
+            travelmode: "driving"
+        });
+
+        if (
+            currentDriverLocation &&
+            validCoordinates(currentDriverLocation[0], currentDriverLocation[1])
+        ) {
+            params.set(
+                "origin",
+                `${currentDriverLocation[0]},${currentDriverLocation[1]}`
+            );
+        }
+
+        window.open(
+            `https://www.google.com/maps/dir/?${params.toString()}`,
+            "_blank",
+            "noopener,noreferrer"
+        );
     }
 
     async function loadDelivery() {
@@ -359,6 +412,7 @@
 
             deliveryDataLoaded = true;
             startBtn.disabled = false;
+            googleMapsBtn.disabled = false;
 
             setStatus("Delivery loaded. You can start sharing your location.");
 
@@ -468,6 +522,7 @@
 
     startBtn.addEventListener("click", startSharing);
     stopBtn.addEventListener("click", stopSharing);
+    googleMapsBtn.addEventListener("click", openGoogleMapsNavigation);
 
     initializeMap();
     connectSocket();
