@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -288,8 +288,9 @@
                     button.type = "button";
                     button.textContent = "Select NGO & Create Order";
 
+                    // Pass the selected NGO object to createOrder.
                     button.addEventListener("click", function() {
-                        createOrder(ngo.ngo_id, button);
+                        createOrder(ngo.ngo_id, button, ngo);
                     });
 
                     card.appendChild(button);
@@ -318,11 +319,12 @@
             }
         }
 
-        async function createOrder(ngoId, clickedButton) {
+        // NGO parameter contains the selected NGO's name and address.
+        async function createOrder(ngoId, clickedButton, ngo) {
             if (orderCreated) return;
 
-            if (!ngoId) {
-                showMessage("This NGO has no valid ID.", true);
+            if (!ngoId || !ngo) {
+                showMessage("Invalid NGO information.", true);
                 return;
             }
 
@@ -363,7 +365,7 @@
                     button.textContent = "Order Created";
                 });
 
-                // Use one order ID for all three links.
+                // Use one order ID for all links.
                 const orderId = result.orderId;
 
                 const links = document.createElement("div");
@@ -382,36 +384,43 @@
                 deliveryLink.textContent =
                     "Open Delivery Partner Page";
 
-                // WhatsApp notification with prefilled message.
+                // Delivery page URL for WhatsApp.
                 const deliveryUrl =
                     window.location.origin +
                     "/delivery/" + encodeURIComponent(orderId);
 
-                // Pickup address is saved by the Donate page in sessionStorage.
+                // Pickup address saved by the Donate page.
                 const pickupAddress =
                     sessionStorage.getItem("pickupLocation") ||
                     "Not provided";
 
-                // Use the NGO selected by the user from the matching list.
+                // Selected NGO information.
                 const selectedNgoName =
                     ngo.name ||
                     ngo.ngo_name ||
                     ("NGO #" + ngo.ngo_id);
 
-                const ngoAddress = ngo.address || "Not provided";
+                const ngoAddress =
+                    ngo.address || "Not provided";
 
+                // WhatsApp message.
                 const messageText =
                     "New Food Harvest AI delivery order!\n\n" +
                     "Order ID: " + orderId + "\n\n" +
+
                     "PICKUP DETAILS\n" +
                     "Pickup location: " + pickupAddress + "\n\n" +
+
                     "DELIVERY DETAILS\n" +
                     "NGO name: " + selectedNgoName + "\n" +
                     "NGO location: " + ngoAddress + "\n\n" +
-                    "Delivery partner page: " + deliveryUrl + "\n\n" +
+
+                    "Delivery page: " + deliveryUrl + "\n\n" +
+
                     "Please open the delivery page and allow location access.";
 
                 const whatsappLink = document.createElement("a");
+
                 whatsappLink.className = "whatsapp";
                 whatsappLink.href =
                     "https://wa.me/?text=" +
@@ -419,6 +428,7 @@
 
                 whatsappLink.target = "_blank";
                 whatsappLink.rel = "noopener noreferrer";
+
                 whatsappLink.textContent =
                     "Notify Delivery Partner on WhatsApp";
 
@@ -429,8 +439,11 @@
                 message.appendChild(links);
 
                 console.log("Order ID:", orderId);
+                console.log("Pickup Address:", pickupAddress);
+                console.log("NGO Name:", selectedNgoName);
+                console.log("NGO Address:", ngoAddress);
                 console.log("Tracking URL:", trackingLink.href);
-                console.log("Delivery URL:", deliveryLink.href);
+                console.log("Delivery URL:", deliveryUrl);
 
             } catch (error) {
                 showMessage(
@@ -453,4 +466,3 @@
     </script>
 </body>
 </html>
-```
