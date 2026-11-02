@@ -1,216 +1,662 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-@@ -11,7 +11,9 @@
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donate Food | Food Harvest AI</title>
 
-<nav class="navbar">
-    <div class="logo">🍱 Food Harvest <span>AI</span></div>
-    <div class="nav-links"><a href="/">Home</a></div>
-    <div class="nav-links">
-        <a href="/">Home</a>
-    </div>
-</nav>
+    <style>
+        :root {
+            --green: #236b45;
+            --green-dark: #194d34;
+            --green-light: #edf5ef;
+            --bg: #f7f8f5;
+            --text: #202923;
+            --muted: #78827a;
+            --border: #e6ebe6;
+        }
 
-<main class="hero">
-@@ -27,99 +29,157 @@
-          style="max-width:550px;margin:35px auto;text-align:left">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+        }
 
-        <label for="foodName">Food name</label>
-        <input id="foodName" required placeholder="e.g. Vegetable Biryani"
-               style="width:100%;padding:12px;margin:8px 0 18px">
-        <input
-            id="foodName"
-            type="text"
-            required
-            maxlength="150"
-            placeholder="e.g. Vegetable Biryani"
-            style="width:100%;padding:12px;margin:8px 0 18px"
-        >
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
 
-        <label for="category">Food category</label>
-<select id="category" required
-        style="width:100%;padding:12px;margin:8px 0 18px">
-    <option value="Rice">Rice</option>
-    <option value="Curry">Curry</option>
-    <option value="Vegetarian">Vegetarian</option>
-    <option value="Gujarati">Gujarati</option>
-    <option value="South Indian">South Indian</option>
-    <option value="Other">Other</option>
-</select>
-        <select
-            id="category"
-            required
-            style="width:100%;padding:12px;margin:8px 0 18px"
-        >
-            <option value="Rice">Rice</option>
-            <option value="Curry">Curry</option>
-            <option value="Vegetarian">Vegetarian</option>
-            <option value="Gujarati">Gujarati</option>
-            <option value="South Indian">South Indian</option>
-            <option value="Other">Other</option>
-        </select>
+        /* NAVIGATION */
 
-        <label for="quantity">Quantity</label>
-        <input id="quantity" type="number" min="0.1" step="any"
-               required placeholder="e.g. 25"
-               style="width:100%;padding:12px;margin:8px 0 18px">
-        <input
-            id="quantity"
-            type="number"
-            min="0.1"
-            step="0.1"
-            required
-            placeholder="e.g. 25"
-            style="width:100%;padding:12px;margin:8px 0 18px"
-        >
+        .navbar {
+            height: 75px;
+            padding: 0 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
 
-        <label for="unit">Unit</label>
-        <select id="unit"
-                style="width:100%;padding:12px;margin:8px 0 18px">
-        <select
-            id="unit"
-            required
-            style="width:100%;padding:12px;margin:8px 0 18px"
-        >
-            <option value="kg">Kilograms</option>
-            <option value="plates">Plates</option>
-            <option value="meals">Meals</option>
-            <option value="packets">Packets</option>
-        </select>
+        .logo {
+            font-size: 19px;
+            font-weight: 750;
+            letter-spacing: -.5px;
+        }
 
-        <label for="location">Pickup location</label>
-        <input id="location" required placeholder="e.g. Ahmedabad"
-               style="width:100%;padding:12px;margin:8px 0 22px">
+        .logo span {
+            color: var(--green);
+        }
 
-        <button type="submit" class="btn btn-primary"
-                style="width:100%;border:0;cursor:pointer">
-        <input
-            id="location"
-            type="text"
-            required
-            maxlength="255"
-            placeholder="e.g. Navrangpura, Ahmedabad"
-            style="width:100%;padding:12px;margin:8px 0 22px"
-        >
+        .nav-links a {
+            text-decoration: none;
+            color: var(--green);
+            font-size: 13px;
+            font-weight: 650;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: .2s;
+        }
 
-        <p id="formMessage" role="status"
-           style="margin:0 0 15px;color:#b02a37"></p>
+        .nav-links a:hover {
+            background: var(--green-light);
+        }
 
-        <button
-            type="submit"
-            class="btn btn-primary"
-            style="width:100%;border:0;cursor:pointer"
-        >
-            Find Nearby NGO
-        </button>
-    </form>
-</main>
+        /* MAIN LAYOUT */
+
+        .page {
+            width: min(1100px, calc(100% - 40px));
+            margin: 55px auto;
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 55px;
+            align-items: center;
+        }
+
+        .intro {
+            padding: 15px 0;
+        }
+
+        .eyebrow {
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: 1.7px;
+            text-transform: uppercase;
+            margin-bottom: 17px;
+        }
+
+        .intro h1 {
+            font-size: clamp(32px, 4vw, 47px);
+            line-height: 1.15;
+            letter-spacing: -1.8px;
+            font-weight: 700;
+            max-width: 460px;
+        }
+
+        .intro h1 span {
+            color: var(--green);
+        }
+
+        .intro p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.8;
+            margin-top: 20px;
+            max-width: 420px;
+        }
+
+        .intro-note {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 35px;
+            color: var(--green-dark);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .note-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--green-light);
+            display: grid;
+            place-items: center;
+            font-size: 17px;
+        }
+
+        /* FORM CARD */
+
+        .form-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 17px;
+            padding: 34px;
+            box-shadow: 0 12px 40px rgba(28, 48, 34, .045);
+        }
+
+        .form-heading {
+            margin-bottom: 27px;
+        }
+
+        .form-heading h2 {
+            font-size: 21px;
+            letter-spacing: -.5px;
+            margin-bottom: 7px;
+        }
+
+        .form-heading p {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 19px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 650;
+            margin-bottom: 9px;
+        }
+
+        input, select {
+            width: 100%;
+            height: 47px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: #fcfdfb;
+            padding: 0 13px;
+            outline: none;
+            color: var(--text);
+            font-size: 13px;
+            transition: .2s;
+        }
+
+        input::placeholder {
+            color: #a2aaa3;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(35, 107, 69, .09);
+            background: white;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-message {
+            display: none;
+            padding: 12px 14px;
+            border-radius: 9px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .form-message.error {
+            display: block;
+            color: #a33c36;
+            background: #fff1ef;
+            border: 1px solid #f3d2ce;
+        }
+
+        .form-message.success {
+            display: block;
+            color: var(--green-dark);
+            background: var(--green-light);
+            border: 1px solid #cfe4d4;
+        }
+
+        .submit-btn {
+            width: 100%;
+            height: 49px;
+            border: none;
+            border-radius: 9px;
+            background: var(--green);
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .submit-btn:hover {
+            background: var(--green-dark);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: .65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-footer {
+            margin-top: 17px;
+            text-align: center;
+            color: #929b94;
+            font-size: 10px;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #9aa39c;
+            font-size: 11px;
+        }
+
+        @media(max-width: 800px) {
+            .page {
+                grid-template-columns: 1fr;
+                gap: 25px;
+                margin: 35px auto;
+                max-width: 570px;
+            }
+
+            .intro {
+                text-align: center;
+            }
+
+            .intro h1, .intro p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .intro-note {
+                justify-content: center;
+            }
+        }
+
+        @media(max-width: 480px) {
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .page {
+                width: calc(100% - 28px);
+            }
+
+            .form-card {
+                padding: 23px 19px;
+            }
+
+            .field-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">🍱 Food Harvest <span>AI</span></div>
+
+        <div class="nav-links">
+            <a href="/">Home</a>
+        </div>
+    </nav>
+
+    <main class="page">
+
+        <!-- INTRODUCTION -->
+        <section class="intro">
+            <div class="eyebrow">Make a difference</div>
+
+            <h1>
+                Share food.<br>
+                <span>Spread kindness.</span>
+            </h1>
+
+            <p>
+                Have surplus food? Turn it into an opportunity to help
+                someone. Share your donation details and we'll help
+                connect you with a nearby NGO.
+            </p>
+
+            <div class="intro-note">
+                <div class="note-icon">🌱</div>
+                <span>Less food waste. More meaningful impact.</span>
+            </div>
+        </section>
+
+        <!-- DONATION FORM -->
+        <section class="form-card">
+
+            <div class="form-heading">
+                <h2>Donate surplus food</h2>
+                <p>Enter the details below to find a nearby NGO.</p>
+            </div>
+
+            <form id="donationForm">
+
+                <div class="form-group">
+                    <label for="foodName">Food name</label>
+
+                    <input
+                        id="foodName"
+                        type="text"
+                        required
+                        maxlength="150"
+                        placeholder="e.g. Vegetable Biryani"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Food category</label>
+
+                    <select id="category" required>
+                        <option value="Rice">Rice</option>
+                        <option value="Curry">Curry</option>
+                        <option value="Vegetarian">Vegetarian</option>
+                        <option value="Gujarati">Gujarati</option>
+                        <option value="South Indian">South Indian</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="field-row">
+
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+
+                        <input
+                            id="quantity"
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            required
+                            placeholder="e.g. 25"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="unit">Unit</label>
+
+                        <select id="unit" required>
+                            <option value="kg">Kilograms</option>
+                            <option value="plates">Plates</option>
+                            <option value="meals">Meals</option>
+                            <option value="packets">Packets</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Pickup location</label>
+
+                    <input
+                        id="location"
+                        type="text"
+                        required
+                        maxlength="255"
+                        placeholder="e.g. Navrangpura, Ahmedabad"
+                    >
+                </div>
+
+                <div
+                    id="formMessage"
+                    class="form-message"
+                    role="status"
+                    aria-live="polite">
+                </div>
+
+                <button
+                    type="submit"
+                    class="submit-btn"
+                    id="submitButton">
+                    Find Nearby NGO →
+                </button>
+
+            </form>
+
+            <div class="form-footer">
+                Your donation details will be used for NGO matching.
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        Food Harvest AI · Reducing food waste, one donation at a time.
+    </footer>
+
+    <script>
+
+        const donationForm = document.getElementById("donationForm");
+
+        const formMessage = document.getElementById("formMessage");
+
+        const submitButton = document.getElementById("submitButton");
 
 
-<script>
-document.getElementById("donationForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-const donationForm = document.getElementById("donationForm");
-const formMessage = document.getElementById("formMessage");
-const submitButton = donationForm.querySelector('button[type="submit"]');
+        // DISPLAY FORM MESSAGE
+        function showMessage(message, type) {
 
-donationForm.addEventListener("submit", async function(event) {
-    event.preventDefault();
+            formMessage.textContent = message;
 
-    formMessage.textContent = "";
+            formMessage.className = "form-message " + type;
 
-    const button = this.querySelector('button[type="submit"]');
-    const food = document.getElementById("foodName").value.trim();
-    const foodName = document.getElementById("foodName").value.trim();
-    const category = document.getElementById("category").value;
-    const quantity = Number(document.getElementById("quantity").value);
-    const unit = document.getElementById("unit").value;
-    const location = document.getElementById("location").value.trim();
-    const category = document.getElementById("category").value;
+        }
 
-    if (!food || !location || !Number.isFinite(quantity) || quantity <= 0) {
-        alert("Please enter valid food details.");
-    const pickupAddress = document.getElementById("location").value.trim();
 
-    if (
-        !foodName ||
-        !category ||
-        !unit ||
-        !pickupAddress ||
-        !Number.isFinite(quantity) ||
-        quantity <= 0
-    ) {
-        formMessage.textContent = "Please enter valid donation details.";
-        return;
-    }
+        // DONATION FORM SUBMISSION
+        donationForm.addEventListener("submit", async function(event) {
 
-    button.disabled = true;
-    button.textContent = "Saving donation...";
-    submitButton.disabled = true;
-    submitButton.textContent = "Saving donation...";
+            event.preventDefault();
 
-    try {
-        const response = await fetch("/api/donations", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({
-                food_name: food,
-                food_name: foodName,
-                category: category,
-                quantity: quantity,
-                unit: unit,
-                pickup_address: location
-                pickup_address: pickupAddress
-            })
+            formMessage.textContent = "";
+            formMessage.className = "form-message";
+
+
+            // GET FORM VALUES
+            const foodName = document
+                .getElementById("foodName")
+                .value.trim();
+
+            const category = document
+                .getElementById("category")
+                .value;
+
+            const quantity = Number(
+                document.getElementById("quantity").value
+            );
+
+            const unit = document
+                .getElementById("unit")
+                .value;
+
+            const pickupAddress = document
+                .getElementById("location")
+                .value.trim();
+
+
+            // VALIDATION
+            if (
+                !foodName ||
+                !category ||
+                !unit ||
+                !pickupAddress ||
+                !Number.isFinite(quantity) ||
+                quantity <= 0
+            ) {
+
+                showMessage(
+                    "Please enter valid donation details.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            // LOADING STATE
+            submitButton.disabled = true;
+
+            submitButton.innerHTML =
+                '<span class="loader"></span> Saving donation...';
+
+
+            try {
+
+                // SEND DATA TO BACKEND
+                const response = await fetch("/api/donations", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        food_name: foodName,
+
+                        category: category,
+
+                        quantity: quantity,
+
+                        unit: unit,
+
+                        pickup_address: pickupAddress
+
+                    })
+
+                });
+
+
+                // READ RESPONSE ONLY ONCE
+                const responseText = await response.text();
+
+                let result;
+
+                try {
+
+                    result = JSON.parse(responseText);
+
+                } catch {
+
+                    console.error(
+                        "Unexpected server response:",
+                        responseText
+                    );
+
+                    throw new Error(
+                        "The server did not return valid JSON. Check your backend API."
+                    );
+
+                }
+
+
+                // CHECK SERVER RESPONSE
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        result.message ||
+                        "Unable to save donation."
+                    );
+
+                }
+
+
+                // SAVE DONATION DETAILS
+                sessionStorage.setItem("foodName", foodName);
+
+                sessionStorage.setItem(
+                    "quantity",
+                    String(quantity)
+                );
+
+                sessionStorage.setItem("unit", unit);
+
+                sessionStorage.setItem(
+                    "pickupLocation",
+                    pickupAddress
+                );
+
+
+                // SAVE FOOD ID IF BACKEND RETURNS IT
+                const foodId = result.foodId ?? result.food_id;
+
+                if (foodId !== undefined && foodId !== null) {
+
+                    sessionStorage.setItem(
+                        "foodId",
+                        String(foodId)
+                    );
+
+                }
+
+
+                // SUCCESS
+                showMessage(
+                    result.message ||
+                    "Donation saved successfully! Finding nearby NGOs...",
+                    "success"
+                );
+
+
+                // REDIRECT TO MATCHING PAGE
+                window.location.href = "/matching";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Donation submission failed:",
+                    error
+                );
+
+                showMessage(
+                    error.message ||
+                    "Unable to save donation. Please try again.",
+                    "error"
+                );
+
+            } finally {
+
+                submitButton.disabled = false;
+
+                submitButton.textContent = "Find Nearby NGO →";
+
+            }
+
         });
 
-        const result = await response.json();
-        const responseText = await response.text();
-        let result;
-
-        if (!response.ok) {
-            throw new Error(result.error || "Could not save donation.");
-        try {
-            result = JSON.parse(responseText);
-        } catch {
-            console.error("Unexpected server response:", responseText);
-            throw new Error(
-                "The server did not return JSON. Check the Render logs and API route."
-            );
-        }
-
-        sessionStorage.setItem("foodName", food);
-        if (!response.ok || !result.success) {
-            throw new Error(
-                result.error || result.message || "Unable to save donation."
-            );
-        }
-
-        sessionStorage.setItem("foodName", foodName);
-        sessionStorage.setItem("quantity", String(quantity));
-        sessionStorage.setItem("unit", unit);
-        sessionStorage.setItem("pickupLocation", location);
-        sessionStorage.setItem("pickupLocation", pickupAddress);
-        sessionStorage.setItem("foodId", String(result.foodId));
-
-        window.location.href = "/matching";
-
-    } catch (error) {
-        alert(error.message || "Unable to save donation. Please try again.");
-        button.disabled = false;
-        button.textContent = "Find Nearby NGO";
-        console.error("Donation submission failed:", error);
-        formMessage.textContent = error.message;
-        submitButton.disabled = false;
-        submitButton.textContent = "Find Nearby NGO";
-    }
-});
-</script>
-
+    </script>
 
 </body>
 </html>
