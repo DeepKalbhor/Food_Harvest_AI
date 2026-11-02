@@ -1,320 +1,715 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Food Harvest AI | Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Harvest AI | Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+    --bg: #f7f8f5;
+    --surface: #ffffff;
+    --ink: #202923;
+    --muted: #78827a;
+    --line: #e9ede8;
+    --green: #236b45;
+    --green-dark: #194d34;
+    --green-soft: #edf5ef;
+    --red: #a84c45;
+    --amber: #a66b19;
+    --shadow: 0 8px 30px rgba(28,48,34,.045);
+}
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7f4;
-            color: #24352a;
-        }
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
 
-        header {
-            background: #176b45;
-            color: white;
-            padding: 22px 5%;
-        }
+a {
+    color: inherit;
+    text-decoration: none;
+}
 
-        header h1 {
-            margin: 0 0 8px;
-        }
+/* NAVIGATION */
 
-        header p {
-            margin: 0;
-            color: #dcefe3;
-        }
+.topbar {
+    height: 76px;
+    background: rgba(255,255,255,.95);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+}
 
-        nav {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 18px;
-            padding: 16px 5%;
-            background: white;
-            border-bottom: 1px solid #e0e8e0;
-        }
+.topbar-inner {
+    width: min(1320px, calc(100% - 64px));
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
 
-        nav a {
-            color: #176b45;
-            text-decoration: none;
-            font-weight: bold;
-        }
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-        nav a:hover {
-            text-decoration: underline;
-        }
+.brand-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    background: var(--green);
+    color: white;
+    font-size: 18px;
+}
 
-        main {
-            max-width: 1250px;
-            margin: auto;
-            padding: 25px;
-        }
+.brand-name {
+    font-size: 15px;
+    font-weight: 700;
+}
 
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 22px;
-        }
+.brand-name span {
+    color: var(--green);
+}
 
-        .toolbar h2 {
-            margin: 0;
-        }
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-        button {
-            border: none;
-            border-radius: 8px;
-            padding: 11px 17px;
-            background: #176b45;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.nav a {
+    color: #69746c;
+    font-size: 13px;
+    font-weight: 550;
+    padding: 10px 13px;
+    border-radius: 8px;
+    transition: .2s;
+}
 
-        button:hover {
-            background: #105437;
-        }
+.nav a:hover,
+.nav a.active {
+    background: var(--green-soft);
+    color: var(--green-dark);
+}
 
-        button:disabled {
-            opacity: 0.6;
-            cursor: wait;
-        }
+.avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #e9efe9;
+    color: var(--green-dark);
+    font-size: 12px;
+    font-weight: 700;
+}
 
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 17px;
-            margin-bottom: 25px;
-        }
+/* MAIN */
 
-        .card {
-            background: white;
-            border: 1px solid #e3eae3;
-            border-radius: 13px;
-            padding: 22px;
-            box-shadow: 0 3px 12px #00000008;
-        }
+main {
+    width: min(1320px, calc(100% - 64px));
+    margin: 42px auto 64px;
+}
 
-        .card-label {
-            color: #68766c;
-            font-size: 14px;
-        }
+.heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 30px;
+}
 
-        .number {
-            font-size: 32px;
-            font-weight: bold;
-            margin: 12px 0 5px;
-            color: #176b45;
-        }
+.eyebrow {
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 10px;
+    font-weight: 750;
+    margin-bottom: 10px;
+}
 
-        .card small {
-            color: #7a857d;
-        }
+h1 {
+    font-size: clamp(27px, 3vw, 34px);
+    letter-spacing: -1.2px;
+    margin: 0;
+    font-weight: 650;
+}
 
-        .charts {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
+.heading p {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 9px 0 0;
+}
 
-        .chart-card {
-            min-width: 0;
-            background: white;
-            padding: 22px;
-            border: 1px solid #e3eae3;
-            border-radius: 13px;
-            box-shadow: 0 3px 12px #00000008;
-        }
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-        .chart-card h3 {
-            margin: 0 0 20px;
-        }
+.updated {
+    color: var(--muted);
+    font-size: 11px;
+    white-space: nowrap;
+}
 
-        .chart-container {
-            position: relative;
-            height: 280px;
-        }
+button {
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--ink);
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: .2s;
+}
 
-        .table-card {
-            background: white;
-            border: 1px solid #e3eae3;
-            border-radius: 13px;
-            padding: 22px;
-            overflow: hidden;
-        }
+button:hover {
+    border-color: #c7d8ca;
+    background: #fbfdfb;
+}
 
-        .table-wrap {
-            overflow-x: auto;
-        }
+button:disabled {
+    opacity: .55;
+    cursor: wait;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 500px;
-        }
+.refresh-icon {
+    color: var(--green);
+    margin-right: 5px;
+}
 
-        th, td {
-            padding: 14px 12px;
-            text-align: left;
-            border-bottom: 1px solid #edf0ed;
-        }
+/* KPI CARDS */
 
-        th {
-            color: #526257;
-            background: #f7faf7;
-        }
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
 
-        .status {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 20px;
-            background: #e6f4ea;
-            color: #176b45;
-            font-size: 12px;
-            font-weight: bold;
-        }
+.kpi,
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    box-shadow: var(--shadow);
+}
 
-        .error {
-            color: #b42318;
-        }
+.kpi {
+    padding: 20px;
+    min-height: 132px;
+}
 
-        .muted {
-            color: #68766c;
-        }
+.kpi-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
 
-        footer {
-            text-align: center;
-            padding: 25px;
-            color: #68766c;
-        }
+.kpi-label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 550;
+}
 
-        @media (max-width: 750px) {
-            main {
-                padding: 16px;
-            }
+.kpi-icon {
+    width: 29px;
+    height: 29px;
+    border-radius: 8px;
+    background: var(--green-soft);
+    color: var(--green);
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+}
 
-            .charts {
-                grid-template-columns: 1fr;
-            }
+.kpi-value {
+    font-size: 30px;
+    font-weight: 650;
+    letter-spacing: -1px;
+    margin-top: 15px;
+}
 
-            .chart-container {
-                height: 250px;
-            }
-        }
-    </style>
+.kpi-note {
+    color: #9aa39c;
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+/* CHARTS */
+
+.main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(300px, .9fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.panel {
+    padding: 22px;
+    min-width: 0;
+}
+
+.panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -.2px;
+    margin: 0;
+}
+
+.panel-subtitle {
+    color: var(--muted);
+    font-size: 11px;
+    margin: 6px 0 0;
+}
+
+.pill {
+    border: 1px solid var(--line);
+    background: #fbfcfa;
+    color: var(--muted);
+    border-radius: 30px;
+    padding: 6px 10px;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.chart-box {
+    height: 260px;
+    position: relative;
+}
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.chart-box.small {
+    height: 225px;
+}
+
+/* RECENT ORDERS */
+
+.table-panel {
+    padding: 0;
+    overflow: hidden;
+}
+
+.table-head {
+    padding: 22px 22px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 540px;
+}
+
+th {
+    text-align: left;
+    padding: 12px 22px;
+    color: #929b94;
+    background: #fafbf9;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+td {
+    padding: 15px 22px;
+    border-bottom: 1px solid #f0f2ef;
+    font-size: 12px;
+    color: #4e5a51;
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+tbody tr:hover {
+    background: #fcfdfb;
+}
+
+.order-id {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 30px;
+    padding: 6px 9px;
+    font-size: 10px;
+    font-weight: 650;
+    background: #f0f3f0;
+    color: #647067;
+    white-space: nowrap;
+}
+
+.status::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status.delivered {
+    background: #edf6ef;
+    color: #287448;
+}
+
+.status.cancelled {
+    background: #fbefee;
+    color: #a84c45;
+}
+
+.status.transit,
+.status.picked {
+    background: #fdf5e9;
+    color: #9b6a20;
+}
+
+.status.accepted,
+.status.assigned {
+    background: #eef3fa;
+    color: #55759d;
+}
+
+.empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 30px;
+}
+
+.notice {
+    margin: 13px 22px;
+    color: var(--muted);
+    font-size: 11px;
+    min-height: 16px;
+}
+
+.notice.error {
+    color: var(--red);
+}
+
+.footer {
+    text-align: center;
+    color: #9aa39c;
+    font-size: 10px;
+    padding: 22px 16px 30px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1050px) {
+    .kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .topbar {
+        height: auto;
+        padding: 15px 0;
+    }
+
+    .topbar-inner {
+        width: calc(100% - 32px);
+        flex-wrap: wrap;
+    }
+
+    .nav {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .nav a {
+        white-space: nowrap;
+    }
+
+    main {
+        width: calc(100% - 32px);
+        margin-top: 28px;
+    }
+
+    .heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .main-grid,
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .kpi {
+        padding: 15px;
+        min-height: 120px;
+    }
+
+    .kpi-value {
+        font-size: 26px;
+    }
+
+    .panel {
+        padding: 17px;
+    }
+
+    .table-head {
+        padding: 18px 17px 14px;
+    }
+
+    th, td {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .updated {
+        display: none;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<header>
-    <h1>🌱 Food Harvest AI</h1>
-    <p>Dashboard & Reports — Food donation and delivery overview</p>
-</header>
+<!-- NAVIGATION -->
+<header class="topbar">
+    <div class="topbar-inner">
 
-<nav>
-    <a href="/">Home</a>
-    <a href="/donate">Donate Food</a>
-    <a href="/matching">NGO Matching</a>
-    <a href="/orders">Manage Orders</a>
-</nav>
+        <a class="brand" href="/">
+            <div class="brand-mark">✳</div>
+            <div class="brand-name">Food Harvest <span>AI</span></div>
+        </a>
+
+        <nav class="nav">
+            <a href="/">Home</a>
+            <a href="/donate">Donate Food</a>
+            <a href="/matching">NGO Matching</a>
+            <a href="/orders">Manage Orders</a>
+            <a class="active" href="/dashboard">Dashboard</a>
+        </nav>
+
+        <div class="avatar">FH</div>
+
+    </div>
+</header>
 
 <main>
 
-    <div class="toolbar">
+    <!-- PAGE HEADING -->
+    <section class="heading">
+
         <div>
-            <h2>Dashboard Overview</h2>
-            <p class="muted" id="lastUpdated">Loading dashboard data...</p>
+            <div class="eyebrow">Overview</div>
+            <h1>Dashboard</h1>
+            <p>A clear view of donations, orders and delivery activity.</p>
         </div>
 
-        <button id="refreshButton" onclick="loadDashboard()">
-            ↻ Refresh Dashboard
-        </button>
-    </div>
+        <div class="actions">
+            <span class="updated" id="lastUpdated">
+                Updating data…
+            </span>
 
-    <!-- Summary cards -->
-    <section class="cards">
-
-        <div class="card">
-            <div class="card-label">Total Donations</div>
-            <div class="number" id="donations">—</div>
-            <small>All recorded donations</small>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Available Donations</div>
-            <div class="number" id="available">—</div>
-            <small>Ready for NGO matching</small>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Total Orders</div>
-            <div class="number" id="orders">—</div>
-            <small>Orders created</small>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Delivered Orders</div>
-            <div class="number" id="delivered">—</div>
-            <small>Successfully delivered</small>
-        </div>
-
-        <div class="card">
-            <div class="card-label">Cancelled Orders</div>
-            <div class="number" id="cancelled">—</div>
-            <small>Cancelled orders</small>
+            <button id="refreshButton"
+                    type="button"
+                    onclick="loadDashboard()">
+                <span class="refresh-icon">↻</span> Refresh
+            </button>
         </div>
 
     </section>
 
-    <!-- Charts -->
-    <section class="charts">
+    <!-- KPI CARDS -->
+    <section class="kpis">
 
-        <div class="chart-card">
-            <h3>📊 Donations Overview</h3>
-            <div class="chart-container">
+        <article class="kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Total donations</span>
+                <span class="kpi-icon">♧</span>
+            </div>
+            <div class="kpi-value" id="donations">—</div>
+            <div class="kpi-note">All recorded donations</div>
+        </article>
+
+        <article class="kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Available</span>
+                <span class="kpi-icon">＋</span>
+            </div>
+            <div class="kpi-value" id="available">—</div>
+            <div class="kpi-note">Ready for matching</div>
+        </article>
+
+        <article class="kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Total orders</span>
+                <span class="kpi-icon">▤</span>
+            </div>
+            <div class="kpi-value" id="orders">—</div>
+            <div class="kpi-note">Orders created</div>
+        </article>
+
+        <article class="kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Delivered</span>
+                <span class="kpi-icon">✓</span>
+            </div>
+            <div class="kpi-value" id="delivered">—</div>
+            <div class="kpi-note">Successfully completed</div>
+        </article>
+
+        <article class="kpi">
+            <div class="kpi-top">
+                <span class="kpi-label">Cancelled</span>
+                <span class="kpi-icon">−</span>
+            </div>
+            <div class="kpi-value" id="cancelled">—</div>
+            <div class="kpi-note">Cancelled orders</div>
+        </article>
+
+    </section>
+
+    <!-- MAIN CHARTS -->
+    <section class="main-grid">
+
+        <article class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="panel-title">Donation availability</h2>
+                    <p class="panel-subtitle">
+                        Available donations compared with other statuses
+                    </p>
+                </div>
+                <span class="pill">Donations</span>
+            </div>
+
+            <div class="chart-box">
                 <canvas id="donationChart"></canvas>
             </div>
-        </div>
+        </article>
 
-        <div class="chart-card">
-            <h3>📦 Order Status Distribution</h3>
-            <div class="chart-container">
+        <article class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="panel-title">Order status</h2>
+                    <p class="panel-subtitle">
+                        Current distribution across orders
+                    </p>
+                </div>
+                <span class="pill">Orders</span>
+            </div>
+
+            <div class="chart-box">
                 <canvas id="orderChart"></canvas>
             </div>
-        </div>
-
-        <div class="chart-card">
-            <h3>📈 Donations vs Orders</h3>
-            <div class="chart-container">
-                <canvas id="comparisonChart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-card">
-            <h3>🚚 Order Progress</h3>
-            <div class="chart-container">
-                <canvas id="progressChart"></canvas>
-            </div>
-        </div>
+        </article>
 
     </section>
 
-    <!-- Recent orders -->
-    <section class="table-card">
-        <h3>📋 Recent Orders</h3>
+    <!-- ANALYTICS CHARTS -->
+    <section class="chart-grid">
+
+        <article class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="panel-title">Donations vs orders</h2>
+                    <p class="panel-subtitle">Overall platform activity</p>
+                </div>
+                <span class="pill">Comparison</span>
+            </div>
+
+            <div class="chart-box small">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </article>
+
+        <article class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2 class="panel-title">Order progress</h2>
+                    <p class="panel-subtitle">
+                        Completed, active and cancelled
+                    </p>
+                </div>
+                <span class="pill">Fulfilment</span>
+            </div>
+
+            <div class="chart-box small">
+                <canvas id="progressChart"></canvas>
+            </div>
+        </article>
+
+    </section>
+
+    <!-- RECENT ORDERS -->
+    <section class="panel table-panel">
+
+        <div class="table-head">
+            <div>
+                <h2 class="panel-title">Recent orders</h2>
+                <p class="panel-subtitle">
+                    Latest activity recorded on the platform
+                </p>
+            </div>
+
+            <a href="/orders">
+                <button type="button">Manage orders ↗</button>
+            </a>
+        </div>
 
         <div class="table-wrap">
             <table>
@@ -322,89 +717,234 @@
                     <tr>
                         <th>Order ID</th>
                         <th>Status</th>
-                        <th>Created At</th>
+                        <th>Created</th>
                     </tr>
                 </thead>
 
                 <tbody id="recent">
                     <tr>
-                        <td colspan="3">Loading orders...</td>
+                        <td colspan="3" class="empty">
+                            Loading orders…
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <p id="message" class="muted" role="status"></p>
+        <p id="message" class="notice" role="status" aria-live="polite"></p>
+
     </section>
 
 </main>
 
-<footer>
-    Food Harvest AI | Reducing food waste, one donation at a time 🌍
+<footer class="footer">
+    Food Harvest AI · Making surplus food go further.
 </footer>
 
 <script>
+
 let donationChart;
 let orderChart;
 let comparisonChart;
 let progressChart;
 
-function makeChart(canvasId, type, labels, values, label) {
-    return new Chart(document.getElementById(canvasId), {
-        type,
-        data: {
-            labels,
-            datasets: [{
-                label,
-                data: values,
-                backgroundColor: [
-                    "#23834b",
-                    "#78bd91",
-                    "#f0b44d",
-                    "#df7770",
-                    "#6895d2",
-                    "#9a83c7",
-                    "#55b8b0"
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: type === "doughnut" || type === "pie",
-                    position: "bottom"
-                }
-            },
-            scales: ["bar", "line"].includes(type) ? {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
+const chartColors = {
+    green: "#286f49",
+    pale: "#b9d4c0",
+    amber: "#d5a45a",
+    red: "#c87970",
+    blue: "#829bb9",
+    grey: "#dfe6df"
+};
+
+// CHART OPTIONS
+function chartOptions(type) {
+
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        cutout: type === "doughnut" ? "72%" : undefined,
+
+        plugins: {
+            legend: {
+                display: type === "doughnut",
+                position: "bottom",
+
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: "circle",
+                    boxWidth: 7,
+                    boxHeight: 7,
+                    padding: 18,
+                    color: "#778279",
+                    font: {
+                        size: 10
                     }
                 }
-            } : {}
-        }
+            },
+
+            tooltip: {
+                backgroundColor: "#202923",
+                padding: 11,
+                cornerRadius: 8
+            }
+        },
+
+        scales: type === "bar" ? {
+
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: "#89938b",
+                    font: {
+                        size: 10
+                    }
+                },
+                border: {
+                    display: false
+                }
+            },
+
+            y: {
+                beginAtZero: true,
+
+                grid: {
+                    color: "#eef1ed"
+                },
+
+                ticks: {
+                    precision: 0,
+                    color: "#89938b",
+                    font: {
+                        size: 10
+                    }
+                },
+
+                border: {
+                    display: false
+                }
+            }
+
+        } : {}
+    };
+}
+
+// CREATE CHART
+function createChart(id, type, labels, values, colors) {
+
+    return new Chart(document.getElementById(id), {
+
+        type,
+
+        data: {
+            labels,
+
+            datasets: [{
+                data: values,
+                backgroundColor: colors,
+                borderWidth: 0,
+                borderRadius: type === "bar" ? 6 : 0,
+                hoverOffset: type === "doughnut" ? 4 : 0,
+                barPercentage: .55,
+                categoryPercentage: .65
+            }]
+        },
+
+        options: chartOptions(type)
+
     });
 }
 
-function updateChart(chart, labels, values) {
+// UPDATE EXISTING CHART
+function setChart(chart, labels, values) {
+
     chart.data.labels = labels;
     chart.data.datasets[0].data = values;
+
     chart.update();
 }
 
+// STATUS COLORS
+function statusClass(status) {
+
+    const s = String(status || "").toLowerCase();
+
+    if (s.includes("deliver")) return "delivered";
+    if (s.includes("cancel")) return "cancelled";
+    if (s.includes("transit")) return "transit";
+    if (s.includes("pick")) return "picked";
+    if (s.includes("accept")) return "accepted";
+    if (s.includes("assign")) return "assigned";
+
+    return "";
+}
+
+// DISPLAY RECENT ORDERS
+function renderRecentOrders(recent) {
+
+    const tbody = document.getElementById("recent");
+
+    tbody.replaceChildren();
+
+    if (!recent.length) {
+
+        const row = tbody.insertRow();
+        const cell = row.insertCell();
+
+        cell.colSpan = 3;
+        cell.className = "empty";
+        cell.textContent = "No orders found yet.";
+
+        return;
+    }
+
+    recent.forEach(order => {
+
+        const row = tbody.insertRow();
+
+        const id = row.insertCell();
+
+        id.className = "order-id";
+        id.textContent = order.order_id ?? "—";
+
+        const statusCell = row.insertCell();
+
+        const badge = document.createElement("span");
+
+        badge.className =
+            "status " + statusClass(order.order_status);
+
+        badge.textContent =
+            order.order_status ?? "Unknown";
+
+        statusCell.appendChild(badge);
+
+        const date = row.insertCell();
+
+        date.textContent = order.created_at
+            ? new Date(order.created_at).toLocaleString()
+            : "—";
+
+    });
+}
+
+// LOAD DASHBOARD DATA
 async function loadDashboard() {
+
     const button = document.getElementById("refreshButton");
     const message = document.getElementById("message");
 
     button.disabled = true;
-    button.textContent = "Loading...";
+    button.textContent = "Loading…";
+
     message.textContent = "";
+    message.className = "notice";
 
     try {
+
         const response = await fetch("/api/dashboard", {
             cache: "no-store"
         });
@@ -412,139 +952,167 @@ async function loadDashboard() {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || "Unable to load dashboard");
+            throw new Error(
+                data.message || "Unable to load dashboard data."
+            );
         }
 
         const donations = data.donations || {};
         const orders = data.orders || {};
-        const recent = Array.isArray(data.recent) ? data.recent : [];
 
-        const totalDonations = Number(donations.total) || 0;
-        const availableDonations = Number(donations.available) || 0;
-        const totalOrders = Number(orders.total) || 0;
-        const deliveredOrders = Number(orders.delivered) || 0;
-        const cancelledOrders = Number(orders.cancelled) || 0;
+        const recent = Array.isArray(data.recent)
+            ? data.recent
+            : [];
 
-        document.getElementById("donations").textContent = totalDonations;
-        document.getElementById("available").textContent = availableDonations;
-        document.getElementById("orders").textContent = totalOrders;
-        document.getElementById("delivered").textContent = deliveredOrders;
-        document.getElementById("cancelled").textContent = cancelledOrders;
+        // KPI VALUES
+        const totalDonations =
+            Number(donations.total) || 0;
+
+        const availableDonations =
+            Number(donations.available) || 0;
+
+        const totalOrders =
+            Number(orders.total) || 0;
+
+        const deliveredOrders =
+            Number(orders.delivered) || 0;
+
+        const cancelledOrders =
+            Number(orders.cancelled) || 0;
 
         const otherDonations = Math.max(
-            0, totalDonations - availableDonations
+            0,
+            totalDonations - availableDonations
         );
 
         const activeOrders = Math.max(
-            0, totalOrders - deliveredOrders - cancelledOrders
+            0,
+            totalOrders - deliveredOrders - cancelledOrders
         );
 
-        // Create charts once; update them on subsequent refreshes.
+        // UPDATE KPI CARDS
+        document.getElementById("donations").textContent =
+            totalDonations.toLocaleString();
+
+        document.getElementById("available").textContent =
+            availableDonations.toLocaleString();
+
+        document.getElementById("orders").textContent =
+            totalOrders.toLocaleString();
+
+        document.getElementById("delivered").textContent =
+            deliveredOrders.toLocaleString();
+
+        document.getElementById("cancelled").textContent =
+            cancelledOrders.toLocaleString();
+
+        // CREATE CHARTS
         if (!donationChart) {
-            donationChart = makeChart(
+
+            donationChart = createChart(
                 "donationChart",
                 "doughnut",
                 ["Available", "Other statuses"],
                 [availableDonations, otherDonations],
-                "Donations"
+                [chartColors.green, chartColors.grey]
             );
 
-            orderChart = makeChart(
+            orderChart = createChart(
                 "orderChart",
                 "doughnut",
-                ["Delivered", "Cancelled", "Active"],
-                [deliveredOrders, cancelledOrders, activeOrders],
-                "Orders"
+                ["Delivered", "Active", "Cancelled"],
+                [deliveredOrders, activeOrders, cancelledOrders],
+                [
+                    chartColors.green,
+                    chartColors.amber,
+                    chartColors.red
+                ]
             );
 
-            comparisonChart = makeChart(
+            comparisonChart = createChart(
                 "comparisonChart",
                 "bar",
                 ["Donations", "Orders"],
                 [totalDonations, totalOrders],
-                "Total"
+                [chartColors.green, chartColors.pale]
             );
 
-            progressChart = makeChart(
+            progressChart = createChart(
                 "progressChart",
                 "bar",
                 ["Delivered", "Active", "Cancelled"],
                 [deliveredOrders, activeOrders, cancelledOrders],
-                "Number of orders"
+                [
+                    chartColors.green,
+                    chartColors.amber,
+                    chartColors.red
+                ]
             );
+
         } else {
-            updateChart(
+
+            // UPDATE CHARTS
+            setChart(
                 donationChart,
                 ["Available", "Other statuses"],
                 [availableDonations, otherDonations]
             );
 
-            updateChart(
+            setChart(
                 orderChart,
-                ["Delivered", "Cancelled", "Active"],
-                [deliveredOrders, cancelledOrders, activeOrders]
+                ["Delivered", "Active", "Cancelled"],
+                [deliveredOrders, activeOrders, cancelledOrders]
             );
 
-            updateChart(
+            setChart(
                 comparisonChart,
                 ["Donations", "Orders"],
                 [totalDonations, totalOrders]
             );
 
-            updateChart(
+            setChart(
                 progressChart,
                 ["Delivered", "Active", "Cancelled"],
                 [deliveredOrders, activeOrders, cancelledOrders]
             );
+
         }
 
-        // Safely display recent orders.
-        const table = document.getElementById("recent");
-        table.replaceChildren();
+        // UPDATE RECENT ORDERS
+        renderRecentOrders(recent);
 
-        if (recent.length === 0) {
-            const row = table.insertRow();
-            const cell = row.insertCell();
-            cell.colSpan = 3;
-            cell.textContent = "No orders found.";
-        } else {
-            recent.forEach(order => {
-                const row = table.insertRow();
-
-                const idCell = row.insertCell();
-                idCell.textContent = order.order_id ?? "—";
-
-                const statusCell = row.insertCell();
-                const badge = document.createElement("span");
-                badge.className = "status";
-                badge.textContent = order.order_status ?? "Unknown";
-                statusCell.appendChild(badge);
-
-                const dateCell = row.insertCell();
-                dateCell.textContent = order.created_at
-                    ? new Date(order.created_at).toLocaleString()
-                    : "—";
-            });
-        }
-
+        // LAST UPDATED
         document.getElementById("lastUpdated").textContent =
-            "Last updated: " + new Date().toLocaleString();
+            "Updated " +
+            new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
 
-        message.textContent = "Dashboard loaded successfully.";
+        message.textContent = "Dashboard data is up to date.";
 
     } catch (error) {
+
         console.error("Dashboard error:", error);
 
         message.textContent =
-            "Could not load dashboard data: " + error.message;
-        message.className = "error";
+            "Unable to load dashboard: " + error.message;
+
+        message.className = "notice error";
+
     } finally {
+
         button.disabled = false;
-        button.textContent = "↻ Refresh Dashboard";
+
+        button.innerHTML =
+            '<span class="refresh-icon">↻</span> Refresh';
+
     }
 }
 
+// INITIAL LOAD
 loadDashboard();
+
 </script>
 
 </body>
